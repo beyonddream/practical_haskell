@@ -1,4 +1,4 @@
 
 
 main :: IO ()
-main = putStrLn "Hello, World!"
+main = putStrLn "Hello, I am worth the world!"
