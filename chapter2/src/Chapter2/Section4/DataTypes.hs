@@ -41,11 +41,32 @@ newtype Price =
   Price Float
   deriving (Show)
 
-clientName :: Client -> String
-clientName client =
+companyName :: Client -> Maybe String
+companyName client =
   case client of
-    GovOrg name -> name
-    Company name _ _ _ -> name
-    Individual person _ ->
-      case person of
-        Person fNm lNm _ -> fNm ++ " " ++ lNm
+    Company name _ _ _ -> Just name
+    _ -> Nothing
+
+fibonacci :: Integer -> Integer
+fibonacci n =
+  case n of
+    0 -> 0
+    1 -> 1
+    _ -> fibonacci (n - 1) + fibonacci (n - 2)
+
+clientsPerGender :: [Client] -> Gender -> Int
+clientsPerGender clients gender =
+  let count =
+        case (getGender (head clients), gender) of
+          (Male, Male) -> 1
+          (Female, Female) -> 1
+          (Unknown, Unknown) -> 1
+          (_, _) -> 0
+   in if null (tail clients)
+        then count
+        else count + clientsPerGender (tail clients) gender
+
+getGender :: Client -> Gender
+getGender (Company _ _ (Person _ _ gender) _) = gender
+getGender (Individual (Person _ _ gender) _) = gender
+getGender (GovOrg _) = Unknown
