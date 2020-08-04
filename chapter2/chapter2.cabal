@@ -17,7 +17,7 @@ extra-source-files:  CHANGELOG.md
 
 library
   exposed-modules:     MyLib
-  other-modules: Chapter2.Section2.Example
+  other-modules: Chapter2.Section2.Example Chapter2.Section3.SimpleFunctions Chapter2.Section4.DataTypes
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0
   hs-source-dirs:      src
