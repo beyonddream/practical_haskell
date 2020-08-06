@@ -116,7 +116,7 @@ maxmin (x:xs) =
       else xs_min)
   where
     (xs_max, xs_min) = maxmin xs
-
+            {-
 ifibonacci :: Integer -> Maybe Integer
 ifibonacci n =
   if n < 0
@@ -127,4 +127,46 @@ ifibonacci n =
            n' ->
              let Just f1 = ifibonacci (n' - 1)
                  Just f2 = ifibonacci (n' - 2)
-              in Just (f1 + f2)
+              in Just (f1 + f2) -}
+
+ifibonacci :: Integer -> Maybe Integer
+ifibonacci n
+  | n < 0 = Nothing
+ifibonacci 0 = Just 0
+ifibonacci 1 = Just 1
+ifibonacci n =
+  let Just f1 = ifibonacci (n - 1)
+      Just f2 = ifibonacci (n - 2)
+   in Just (f1 + f2)
+
+binom _ 0 = 1
+binom x y
+  | x == y = 1
+binom n k = binom (n - 1) (k - 1) + binom (n - 1) k
+
+multipleOf :: Integer -> Integer -> Bool
+multipleOf x y = mod x y == 0
+
+specialMultiples :: Integer -> String
+specialMultiples n
+  | multipleOf n 2 = show n ++ " is multiple of 2"
+  | multipleOf n 3 = show n ++ " is multiple of 3"
+  | multipleOf n 5 = show n ++ " is multiple of 5"
+  | otherwise = show n ++ " is a beautiful number"
+
+ackerman :: Integer -> Integer -> Integer
+ackerman 0 n = n + 1
+ackerman m 0
+  | m > 0 = ackerman (m - 1) 1
+ackerman m n
+  | m > 0 && n > 0 = ackerman (m - 1) (ackerman m (n - 1))
+
+unzip1 :: [(Integer, Integer)] -> ([Integer], [Integer])
+unzip1 [] = ([], [])
+unzip1 [_] = ([], [])
+unzip1 (x:y:xs) =
+  let (x1, y1) = x
+      (x2, y2) = y
+   in ([x1, x2] ++ left, [y1, y2] ++ right)
+  where
+    (left, right) = unzip1 xs
