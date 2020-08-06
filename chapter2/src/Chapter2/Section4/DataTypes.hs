@@ -54,19 +54,77 @@ fibonacci n =
     1 -> 1
     _ -> fibonacci (n - 1) + fibonacci (n - 2)
 
-clientsPerGender :: [Client] -> Gender -> Int
-clientsPerGender clients gender =
+-- Exercise 2-5
+-- part a
+clientsPerGender :: [Client] -> Gender -> Int -> Int
+clientsPerGender clients gender acc =
   let count =
         case (getGender (head clients), gender) of
-          (Male, Male) -> 1
-          (Female, Female) -> 1
-          (Unknown, Unknown) -> 1
-          (_, _) -> 0
+          (Male, Male) -> acc + 1
+          (Female, Female) -> acc + 1
+          (Unknown, Unknown) -> acc + 1
+          (_, _) -> acc
    in if null (tail clients)
         then count
-        else count + clientsPerGender (tail clients) gender
+        else clientsPerGender (tail clients) gender count
 
 getGender :: Client -> Gender
 getGender (Company _ _ (Person _ _ gender) _) = gender
 getGender (Individual (Person _ _ gender) _) = gender
 getGender (GovOrg _) = Unknown
+
+-- part b
+applyDiscount :: [TimeMachine] -> Float -> [TimeMachine]
+applyDiscount [] _ = []
+applyDiscount timeMachines discountRate =
+  applyDiscount (tail timeMachines) discountRate ++
+  case head timeMachines of
+    TimeMachine manufacturer model name direction (Price val) ->
+      [ TimeMachine
+          manufacturer
+          model
+          name
+          direction
+          (Price (val - val * discountRate))
+      ]
+
+null1 :: [a] -> Bool
+null1 [] = True
+null1 (_:_) = False
+
+head1 :: [a] -> a
+head1 [] = head [] -- using head to so it can throw exception
+head1 (x:_) = x
+
+tail1 :: [a] -> [a]
+tail1 [] = []
+tail1 (_:xs) = xs
+
+sorted :: [Integer] -> Bool
+sorted [] = True
+sorted [_] = True
+sorted (x:r@(y:_)) = x < y && sorted r
+
+maxmin :: [Integer] -> (Integer, Integer)
+maxmin [x] = (x, x)
+maxmin (x:xs) =
+  ( if x > xs_max
+      then x
+      else xs_max
+  , if x < xs_min
+      then x
+      else xs_min)
+  where
+    (xs_max, xs_min) = maxmin xs
+
+ifibonacci :: Integer -> Maybe Integer
+ifibonacci n =
+  if n < 0
+    then Nothing
+    else case n of
+           0 -> Just 0
+           1 -> Just 1
+           n' ->
+             let Just f1 = ifibonacci (n' - 1)
+                 Just f2 = ifibonacci (n' - 2)
+              in Just (f1 + f2)
