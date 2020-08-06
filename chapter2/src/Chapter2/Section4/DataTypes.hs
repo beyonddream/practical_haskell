@@ -1,3 +1,5 @@
+{-# LANGUAGE ViewPatterns #-}
+
 module Chapter2.Section4.DataTypes where
 
 data Client
@@ -154,13 +156,16 @@ specialMultiples n
   | multipleOf n 5 = show n ++ " is multiple of 5"
   | otherwise = show n ++ " is a beautiful number"
 
-ackerman :: Integer -> Integer -> Integer
+ackerman :: Integer -> Integer -> Maybe Integer
 ackerman 0 n
-  | n > 0 = n + 1
+  | n > 0 = Just (n + 1)
 ackerman m 0
   | m > 0 = ackerman (m - 1) 1
 ackerman m n
-  | m > 0 && n > 0 = ackerman (m - 1) (ackerman m (n - 1))
+  | m > 0 && n > 0 =
+    let Just aRt = ackerman m (n - 1)
+     in ackerman (m - 1) aRt
+ackerman _ _ = Nothing
 
 unzip1 :: [(Integer, Integer)] -> ([Integer], [Integer])
 unzip1 [] = ([], [])
@@ -171,3 +176,19 @@ unzip1 (x:y:xs) =
    in ([x1, x2] ++ left, [y1, y2] ++ right)
   where
     (left, right) = unzip1 xs
+
+responsibility :: Client -> String
+responsibility (Company _ _ _ r) = r
+responsibility _ = "Unknown"
+
+clientName :: Client -> String
+clientName client =
+  case client of
+    GovOrg name -> name
+    Company name _ _ _ -> name
+    Individual (Person fNm lNm _) _ -> fNm ++ " " ++ lNm
+
+specialClient :: Client -> Bool
+specialClient (clientName -> "Mr. Alejandro") = True
+specialClient (responsibility -> "Director") = True
+specialClient _ = False
