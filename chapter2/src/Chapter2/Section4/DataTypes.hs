@@ -155,7 +155,8 @@ specialMultiples n
   | otherwise = show n ++ " is a beautiful number"
 
 ackerman :: Integer -> Integer -> Integer
-ackerman 0 n = n + 1
+ackerman 0 n
+  | n > 0 = n + 1
 ackerman m 0
   | m > 0 = ackerman (m - 1) 1
 ackerman m n
