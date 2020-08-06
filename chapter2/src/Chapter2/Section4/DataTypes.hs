@@ -91,8 +91,7 @@ applyDiscount [] _ = []
 applyDiscount timeMachines discountRate =
   applyDiscount (tail timeMachines) discountRate ++
   case head timeMachines of
-    t@TimeMachine {price = p@Price {..}} ->
-      [t {price = p {value = value - discountRate}}]
+    t@TimeMachine {price = Price p} -> [t {price = Price (p - discountRate)}]
 
 null1 :: [a] -> Bool
 null1 [] = True
