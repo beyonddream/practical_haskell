@@ -21,7 +21,13 @@ data Gender
   deriving (Show)
 
 data TimeMachine =
-  TimeMachine Manufacturer Model Name Direction Price
+  TimeMachine
+    { manufacturer :: Manufacturer
+    , model :: Model
+    , name :: Name
+    , direction :: Direction
+    , price :: Price
+    }
   deriving (Show)
 
 newtype Manufacturer =
@@ -42,7 +48,9 @@ data Direction
   deriving (Show)
 
 newtype Price =
-  Price Float
+  Price
+    { value :: Float
+    }
   deriving (Show)
 
 companyName :: Client -> Maybe String
@@ -83,14 +91,8 @@ applyDiscount [] _ = []
 applyDiscount timeMachines discountRate =
   applyDiscount (tail timeMachines) discountRate ++
   case head timeMachines of
-    TimeMachine manufacturer model name direction (Price val) ->
-      [ TimeMachine
-          manufacturer
-          model
-          name
-          direction
-          (Price (val - val * discountRate))
-      ]
+    t@TimeMachine {price = p@Price {..}} ->
+      [t {price = p {value = value - discountRate}}]
 
 null1 :: [a] -> Bool
 null1 [] = True
