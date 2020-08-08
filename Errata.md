@@ -12,3 +12,7 @@ page 45
 Let’s see how the execution of a call to clientName (Individual [Person "Jack" "Smith" Male])
 should be "clientName (Individual (Person "Jack" "Smith" Male) False)"
 
+page 66
+"As you can see from the examples, a polymorphic type is written with its name along with a list of all its type parameters, like Maybe Integer"
+- "Maybe Integer" should be "Maybe a"
+
