@@ -16,3 +16,5 @@ page 66
 "As you can see from the examples, a polymorphic type is written with its name along with a list of all its type parameters, like Maybe Integer"
 - "Maybe Integer" should be "Maybe a"
 
+page 72
+https://downloads.haskell.org/~ghc/latest/docs/html/libraries/base/Prelude.html#v:not - link seem to be broken.
