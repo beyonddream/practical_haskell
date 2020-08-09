@@ -89,9 +89,9 @@ getGender (GovOrg _) = Unknown
 applyDiscount :: [TimeMachine] -> Float -> [TimeMachine]
 applyDiscount [] _ = []
 applyDiscount timeMachines discountRate =
-  applyDiscount (tail timeMachines) discountRate ++
-  case head timeMachines of
-    t@TimeMachine {price = Price p} -> [t {price = Price (p - discountRate)}]
+  (case head timeMachines of
+     t@TimeMachine {price = Price p} -> [t {price = Price (p - discountRate)}]) ++
+  applyDiscount (tail timeMachines) discountRate
 
 null1 :: [a] -> Bool
 null1 [] = True

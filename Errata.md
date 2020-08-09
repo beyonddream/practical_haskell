@@ -18,3 +18,12 @@ page 66
 
 page 72
 https://downloads.haskell.org/~ghc/latest/docs/html/libraries/base/Prelude.html#v:not - link seem to be broken.
+
+page 76
+But if you curry it, you must call it with only one argument, which is a tuple.
+*Chapter3.FnsParams> (uncurry max) (3,2)
+should be "But if you uncurry it"
+
+page 78
+"import Data.List (permutations, subsequence)"
+should be "import Data.List (permutations, subsequences)"
