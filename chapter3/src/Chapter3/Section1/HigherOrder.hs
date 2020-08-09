@@ -1,5 +1,6 @@
-module HigherOrder where
+module Chapter3.Section1.HigherOrder where
 
+maybeString :: Maybe a -> [Char]
 maybeString (Just _) = "Just"
 maybeString Nothing = "Nothing"
 

@@ -1,1 +1,0 @@
-module FnsParams where
