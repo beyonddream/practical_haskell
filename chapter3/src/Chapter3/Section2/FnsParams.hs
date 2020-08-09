@@ -52,11 +52,11 @@ filterOnes nums =
 
 {- HLINT ignore filterANumber -}
 filterANumber :: [Integer] -> Integer -> [Integer]
-filterANumber nums a = filter (\n -> n == a) nums
+filterANumber nums a = filter (== a) nums
 
 {- HLINT ignore filterNot -}
 filterNot :: (a -> Bool) -> [a] -> [a]
-filterNot f x = filter (\n -> not $ f n) x
+filterNot f = filter $ not . f
 
 {- HLINT ignore filterGovOrgs -}
 filterGovOrgs :: [Client a] -> [Client a]

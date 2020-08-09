@@ -17,7 +17,8 @@ extra-source-files:  CHANGELOG.md
 
 library
   exposed-modules:     MyLib
-  other-modules: Chapter3.Section1.HigherOrder Chapter3.Section2.FnsParams Chapter3.Section3.MoreModules
+  other-modules: Chapter3.Section1.HigherOrder Chapter3.Section2.FnsParams Chapter3.Section3.MoreModules Chapter3.Section4.Lists
+
   -- other-extensions:
   ghc-options: -Wall
   build-depends:       base ^>=4.12.0.0
