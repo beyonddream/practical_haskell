@@ -74,3 +74,7 @@ isGovOrg _ = False
 {- HLINT ignore filterGovOrgs' -}
 filterGovOrgs' :: [Client a] -> [Client a]
 filterGovOrgs' clients = filter isGovOrg clients
+
+duplicateOdds list = map (* 2) $ filter odd list
+
+duplicateOdds' = map (* 2) . filter odd
