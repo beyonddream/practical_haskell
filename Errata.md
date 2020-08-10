@@ -27,3 +27,8 @@ should be "But if you uncurry it"
 page 78
 "import Data.List (permutations, subsequence)"
 should be "import Data.List (permutations, subsequences)"
+
+page 83
+1 + (2 + foldr (+) [3])
+should be "1 + (2 + foldr (+) 0 [3])"
+
