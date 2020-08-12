@@ -3,6 +3,8 @@
 module Chapter3.Section4.Lists where
 
 import Chapter3.Section1.HigherOrder (Client(..), Person(..))
+import Data.Function
+import Data.List
 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' _ [] = []
@@ -88,3 +90,70 @@ minimumBy f xs =
          then x
          else y)
     xs
+
+skipUntilGov :: [Client a] -> [Client a]
+skipUntilGov =
+  dropWhile
+    (\case
+       GovOrg {} -> False
+       _ -> True)
+
+isIndividual :: Client a -> Bool
+isIndividual (Individual {}) = True
+isIndividual _ = False
+
+checkAnalytics :: [Client a] -> (Bool, Bool)
+checkAnalytics cs = (any isIndividual cs, not $ all isIndividual cs)
+
+elem' n list =
+  let r = find (== n) list
+   in case r of
+        Just _ -> True
+        _ -> False
+
+elem'' _ [] = False
+elem'' n (x:xs) = n == x || elem'' n xs
+
+compareClient :: Client a -> Client a -> Ordering
+compareClient (Individual {person = p1}) (Individual {person = p2}) =
+  compare (firstName p1) (firstName p2)
+compareClient (Individual {}) _ = GT
+compareClient _ (Individual {}) = LT
+compareClient c1 c2 = compare (clientName c1) (clientName c2)
+
+listOfClients =
+  [ Individual 2 (Person "H. G." "Wells")
+  , GovOrg 3 "NTTF" -- National Time Travel Foundation
+  , Company 4 "Wormhole Inc." (Person "Karl" "Schwarzschild") "Physicist"
+  , Individual 5 (Person "Doctor" "")
+  , Individual 6 (Person "Sarah" "Jane")
+  ]
+
+companyDutiesAnalytics :: [Client a] -> [String]
+companyDutiesAnalytics =
+  map (duty . head) .
+  sortBy (\x y -> compare (length y) (length x)) .
+  groupBy (\x y -> duty x == duty y) . filter isCompany
+  where
+    isCompany (Company {}) = True
+    isCompany _ = False
+
+companyDutiesAnalytics' :: [Client a] -> [String]
+companyDutiesAnalytics' =
+  map (duty . head) .
+  sortBy (flip (compare `on` length)) .
+  groupBy ((==) `on` duty) . filter isCompany
+  where
+    isCompany (Company {}) = True
+    isCompany _ = False
+
+enum :: Int -> Int -> [Int]
+enum a b
+  | a > b = []
+enum a b = a : enum (a + 1) b
+
+withPositions :: [a] -> [(Int, a)]
+withPositions list = zip (enum 1 $ length list) list
+
+withPositions' :: [a] -> [(Int, a)]
+withPositions' list = zip [1 .. length list] list
