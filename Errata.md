@@ -32,3 +32,8 @@ page 83
 1 + (2 + foldr (+) [3])
 should be "1 + (2 + foldr (+) 0 [3])"
 
+page 98
+[ toUpper c | s <- "A","list"], c <- ' ':s ]
+should be "[ toUpper c | s <- ["A","list"], c <- ' ':s ]"
+
+

@@ -1,10 +1,12 @@
-{-# LANGUAGE NamedFieldPuns, LambdaCase #-}
+{-# LANGUAGE NamedFieldPuns, LambdaCase, TransformListComp,
+  RecordWildCards #-}
 
 module Chapter3.Section4.Lists where
 
 import Chapter3.Section1.HigherOrder (Client(..), Person(..))
 import Data.Function
 import Data.List
+import GHC.Exts
 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' _ [] = []
@@ -157,3 +159,21 @@ withPositions list = zip (enum 1 $ length list) list
 
 withPositions' :: [a] -> [(Int, a)]
 withPositions' list = zip [1 .. length list] list
+
+duplicateOdds :: [Integer] -> [Integer]
+duplicateOdds list = map (* 2) $ filter odd list
+
+duplicateOdds' list = [2 * x | x <- list, odd x]
+
+--
+--
+-- group all the records belonging to the same company sorted by duty and then sort
+-- the companies by the number of records.
+companyAnalytics :: [Client a] -> [(String, [(Person, String)])]
+companyAnalytics clients =
+  [ (the clientName, zip person duty)
+  | client@(Company {..}) <- clients
+  , then sortWith by duty
+  , then group by clientName using groupWith
+  , then sortWith by length client
+  ]
