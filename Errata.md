@@ -36,4 +36,8 @@ page 98
 [ toUpper c | s <- "A","list"], c <- ' ':s ]
 should be "[ toUpper c | s <- ["A","list"], c <- ' ':s ]"
 
+page 110
+"When your use Stack"
+should be "When you use Stack"
+
 
