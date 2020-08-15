@@ -91,10 +91,7 @@ classifyClients' clients =
                Individual {..} -> (IndividualKind, S.singleton client) : l)
           []
           clients
-   in S.foldr
-        (uncurry (M.insertWith S.union))
-        M.empty
-        (S.fromList listOfClientByKind)
+   in M.fromListWith S.union listOfClientByKind
 
 clients :: Int -> Int -> [Client Integer]
 clients count seed =
