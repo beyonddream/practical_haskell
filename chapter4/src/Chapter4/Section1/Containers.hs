@@ -57,6 +57,45 @@ data ClientKind
   | IndividualKind
   deriving (Show, Eq, Ord)
 
+classifyClients :: [Client Integer] -> M.Map ClientKind (S.Set (Client Integer))
+classifyClients =
+  foldr
+    (\client m ->
+       case client of
+         GovOrg {..} ->
+           M.insert
+             GovOrgKind
+             (S.insert client (M.findWithDefault S.empty GovOrgKind m))
+             m
+         Company {..} ->
+           M.insert
+             CompanyKind
+             (S.insert client (M.findWithDefault S.empty CompanyKind m))
+             m
+         Individual {..} ->
+           M.insert
+             IndividualKind
+             (S.insert client (M.findWithDefault S.empty IndividualKind m))
+             m)
+    M.empty
+
+classifyClients' ::
+     [Client Integer] -> M.Map ClientKind (S.Set (Client Integer))
+classifyClients' clients =
+  let listOfClientByKind =
+        foldr
+          (\client l ->
+             case client of
+               GovOrg {..} -> (GovOrgKind, S.singleton client) : l
+               Company {..} -> (CompanyKind, S.singleton client) : l
+               Individual {..} -> (IndividualKind, S.singleton client) : l)
+          []
+          clients
+   in S.foldr
+        (uncurry (M.insertWith S.union))
+        M.empty
+        (S.fromList listOfClientByKind)
+
 clients :: Int -> Int -> [Client Integer]
 clients count seed =
   zipWith assignId (unfoldr (Just . client) (mkStdGen seed)) [1 .. count]
@@ -82,25 +121,3 @@ defaultIndividual = Individual 0 defaultPerson
 
 defaultPerson :: Person
 defaultPerson = Person "fn" "ln"
-
-classifyClients :: [Client Integer] -> M.Map ClientKind (S.Set (Client Integer))
-classifyClients =
-  foldr
-    (\client m ->
-       case client of
-         GovOrg {..} ->
-           M.insert
-             GovOrgKind
-             (S.insert client (M.findWithDefault S.empty GovOrgKind m))
-             m
-         Company {..} ->
-           M.insert
-             CompanyKind
-             (S.insert client (M.findWithDefault S.empty CompanyKind m))
-             m
-         Individual {..} ->
-           M.insert
-             IndividualKind
-             (S.insert client (M.findWithDefault S.empty IndividualKind m))
-             m)
-    M.empty
