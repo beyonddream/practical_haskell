@@ -1,9 +1,11 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, RecordWildCards #-}
 
-module Chapter4.Section.Containers where
+module Chapter4.Section1.Containers where
 
+import Data.List (unfoldr)
 import qualified Data.Map as M
 import qualified Data.Set as S
+import System.Random
 
 insert :: Ord k => k -> a -> M.Map k a -> M.Map k a
 insert k v =
@@ -53,6 +55,52 @@ data ClientKind
   = GovOrgKind
   | CompanyKind
   | IndividualKind
+  deriving (Show, Eq, Ord)
+
+clients :: Int -> Int -> [Client Integer]
+clients count seed =
+  zipWith assignId (unfoldr (Just . client) (mkStdGen seed)) [1 .. count]
+
+client :: RandomGen g => g -> (Client Integer, g)
+client g =
+  case randomR (0 :: Int, 2) g of
+    (0, g') -> (defaultGovOrg, g')
+    (1, g') -> (defaultCompany, g')
+    (_, g') -> (defaultIndividual, g')
+
+assignId :: Client Integer -> Int -> Client Integer
+assignId c i = c {clientId = toInteger i}
+
+defaultGovOrg :: Client Integer
+defaultGovOrg = GovOrg 0 "govorg"
+
+defaultCompany :: Client Integer
+defaultCompany = Company 0 "company" defaultPerson "duty"
+
+defaultIndividual :: Client Integer
+defaultIndividual = Individual 0 defaultPerson
+
+defaultPerson :: Person
+defaultPerson = Person "fn" "ln"
 
 classifyClients :: [Client Integer] -> M.Map ClientKind (S.Set (Client Integer))
-classifyClients [] = M.empty
+classifyClients =
+  foldr
+    (\client m ->
+       case client of
+         GovOrg {..} ->
+           M.insert
+             GovOrgKind
+             (S.insert client (M.findWithDefault S.empty GovOrgKind m))
+             m
+         Company {..} ->
+           M.insert
+             CompanyKind
+             (S.insert client (M.findWithDefault S.empty CompanyKind m))
+             m
+         Individual {..} ->
+           M.insert
+             IndividualKind
+             (S.insert client (M.findWithDefault S.empty IndividualKind m))
+             m)
+    M.empty
