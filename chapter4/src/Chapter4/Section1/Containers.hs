@@ -1,12 +1,12 @@
-{-# LANGUAGE LambdaCase, RecordWildCards #-}
+{-# LANGUAGE LambdaCase, RecordWildCards, NamedFieldPuns #-}
 
 module Chapter4.Section1.Containers where
 
+import Data.Graph
 import Data.List (unfoldr)
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Tree
-import System.Random
 
 insert :: Ord k => k -> a -> M.Map k a -> M.Map k a
 insert k v =
@@ -50,7 +50,7 @@ data Person =
     { firstName :: String
     , lastName :: String
     }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Read)
 
 data ClientKind
   = GovOrgKind
@@ -94,32 +94,6 @@ classifyClients' clients =
           clients
    in M.fromListWith S.union listOfClientByKind
 
-clients :: Int -> Int -> [Client Integer]
-clients count seed =
-  zipWith assignId (unfoldr (Just . client) (mkStdGen seed)) [1 .. count]
-
-client :: RandomGen g => g -> (Client Integer, g)
-client g =
-  case randomR (0 :: Int, 2) g of
-    (0, g') -> (defaultGovOrg, g')
-    (1, g') -> (defaultCompany, g')
-    (_, g') -> (defaultIndividual, g')
-
-assignId :: Client Integer -> Int -> Client Integer
-assignId c i = c {clientId = toInteger i}
-
-defaultGovOrg :: Client Integer
-defaultGovOrg = GovOrg 0 "govorg"
-
-defaultCompany :: Client Integer
-defaultCompany = Company 0 "company" defaultPerson "duty"
-
-defaultIndividual :: Client Integer
-defaultIndividual = Individual 0 defaultPerson
-
-defaultPerson :: Person
-defaultPerson = Person "fn" "ln"
-
 ---------
 preOrder :: (a -> b) -> Tree a -> [b]
 preOrder f (Node v subtrees) =
@@ -128,3 +102,89 @@ preOrder f (Node v subtrees) =
 
 pictureTree :: Tree Int
 pictureTree = Node 1 [Node 2 [Node 3 [], Node 4 [], Node 5 []], Node 6 []]
+
+timeMachineGraph :: [(String, String, [String])]
+timeMachineGraph =
+  [ ("wood", "wood", ["walls"])
+  , ("plastic", "plastic", ["walls", "wheels"])
+  , ("aluminum", "aluminum", ["wheels", "door"])
+  , ("walls", "walls", ["done"])
+  , ("wheels", "wheels", ["done"])
+  , ("door", "door", ["done"])
+  , ("done", "done", [])
+  ]
+
+timeMachinePrecedence ::
+     (Graph, Vertex -> (String, String, [String]), String -> Maybe Vertex)
+timeMachinePrecedence = graphFromEdges timeMachineGraph
+
+timeMachineTravel :: Graph
+timeMachineTravel =
+  buildG
+    (103, 2013)
+    [ (1302, 1614)
+    , (1614, 1302)
+    , (1302, 2013)
+    , (2013, 1302)
+    , (1614, 2013)
+    , (2013, 1408)
+    , (1408, 1993)
+    , (1408, 917)
+    , (1993, 917)
+    , (917, 103)
+    , (103, 917)
+    ]
+
+class Nameable n where
+  name' :: n -> String
+
+initial :: Nameable n => n -> Char
+initial n = head (name' n)
+
+--
+instance Nameable (Client i) where
+  name' Individual {person = Person {firstName = f, lastName = n}} =
+    f ++ " " ++ n
+  name' c = clientName c
+
+data TimeMachine =
+  TimeMachine
+    { manufacturer :: Manufacturer
+    , model :: Model
+    , name :: Name
+    , direction :: Direction
+    , price :: Price
+    }
+  deriving (Show)
+
+newtype Manufacturer =
+  Manufacturer String
+  deriving (Show)
+
+newtype Model =
+  Model Int
+  deriving (Show)
+
+newtype Name =
+  Name String
+  deriving (Show)
+
+data Direction
+  = PAST
+  | FUTURE
+  deriving (Show)
+
+newtype Price =
+  Price
+    { value :: Float
+    }
+  deriving (Show)
+
+class Priceable n where
+  priceOf :: n -> Double
+
+instance Priceable TimeMachine where
+  priceOf TimeMachine {price = Price {value}} = realToFrac value
+
+totalPrice :: Priceable p => [p] -> Double
+totalPrice = foldr (\x y -> priceOf x + y) 0.0
