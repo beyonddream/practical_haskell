@@ -40,4 +40,6 @@ page 110
 "When your use Stack"
 should be "When you use Stack"
 
-
+page 129
+In such a case, you call graphFromEdges, which takes a list of triples, (value, key, [key]), the latest component being the aforementioned list of neighbors
+should be "last component"
