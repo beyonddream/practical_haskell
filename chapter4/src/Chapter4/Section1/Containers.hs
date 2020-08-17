@@ -7,6 +7,7 @@ import Data.List (unfoldr)
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Tree
+import System.Random
 
 insert :: Ord k => k -> a -> M.Map k a -> M.Map k a
 insert k v =
@@ -43,7 +44,7 @@ data Client i
       { clientId :: i
       , person :: Person
       }
-  deriving (Show, Ord)
+  deriving (Show)
 
 data Person =
   Person
@@ -51,6 +52,32 @@ data Person =
     , lastName :: String
     }
   deriving (Show, Ord, Read)
+
+clients :: Int -> Int -> [Client Integer]
+clients count seed =
+  zipWith assignId (unfoldr (Just . client) (mkStdGen seed)) [1 .. count]
+
+client :: RandomGen g => g -> (Client Integer, g)
+client g =
+  case randomR (0 :: Int, 2) g of
+    (0, g') -> (defaultGovOrg, g')
+    (1, g') -> (defaultCompany, g')
+    (_, g') -> (defaultIndividual, g')
+
+assignId :: Client Integer -> Int -> Client Integer
+assignId c i = c {clientId = toInteger i}
+
+defaultGovOrg :: Client Integer
+defaultGovOrg = GovOrg 0 "govorg"
+
+defaultCompany :: Client Integer
+defaultCompany = Company 0 "company" defaultPerson "duty"
+
+defaultIndividual :: Client Integer
+defaultIndividual = Individual 0 defaultPerson
+
+defaultPerson :: Person
+defaultPerson = Person "fn" "ln"
 
 data ClientKind
   = GovOrgKind
@@ -194,10 +221,31 @@ instance Eq Person where
     firstNameL == firstNameR && lastNameL == lastNameR
 
 instance Eq i => Eq (Client i) where
-  GovOrg clientIdL clientNameL == GovOrg clientIdR clientNameR =
-    clientIdL == clientIdR && clientNameL == clientNameR
+  Individual clientIdL personL == Individual clientIdR personR =
+    clientIdL == clientIdR && personL == personR
+  Individual {clientId = clientIdL, person = Person firstName lastName} == y =
+    clientIdL == clientId y && (firstName ++ " " ++ lastName) == clientName y
+  x == y@Individual {..} = y == x
   Company clientIdL clientNameL personL dutyL == Company clientIdR clientNameR personR dutyR =
     clientIdL == clientIdR &&
     clientNameL == clientNameR && personL == personR && dutyL == dutyR
-  Individual clientIdL personL == Individual clientIdR personR =
-    clientIdL == clientIdR && personL == personR
+  x == y = clientId x == clientId y && clientName x == clientName y
+
+instance Eq i => Ord (Client i) where
+  compare Individual {person = personL} Individual {person = personR} =
+    compare personL personR
+  compare Individual {person = Person {..}} y =
+    compare (firstName ++ " " ++ lastName) (clientName y)
+  compare x y@Individual {..} = compare y x
+  compare Company {clientName = clientNameL} GovOrg {clientName = clientNameR} =
+    compare clientNameR clientNameL
+  compare Company {clientName = clientNameL, person = personL, duty = dutyL} Company { clientName = clientNameR
+                                                                                     , duty = dutyR
+                                                                                     , person = personR
+                                                                                     }
+    | clientNameL == clientNameR && dutyL == dutyR = compare personL personR
+  compare Company {clientName = clientNameL, duty = dutyL} Company { clientName = clientNameR
+                                                                   , duty = dutyR
+                                                                   }
+    | clientNameL == clientNameR = compare dutyL dutyR
+  compare x y = compare (clientName x) (clientName y)
