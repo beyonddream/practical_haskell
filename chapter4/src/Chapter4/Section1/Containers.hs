@@ -43,14 +43,14 @@ data Client i
       { clientId :: i
       , person :: Person
       }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Ord)
 
 data Person =
   Person
     { firstName :: String
     , lastName :: String
     }
-  deriving (Show, Eq, Ord, Read)
+  deriving (Show, Ord, Read)
 
 data ClientKind
   = GovOrgKind
@@ -188,3 +188,16 @@ instance Priceable TimeMachine where
 
 totalPrice :: Priceable p => [p] -> Double
 totalPrice = foldr (\x y -> priceOf x + y) 0.0
+
+instance Eq Person where
+  Person firstNameL lastNameL == Person firstNameR lastNameR =
+    firstNameL == firstNameR && lastNameL == lastNameR
+
+instance Eq i => Eq (Client i) where
+  GovOrg clientIdL clientNameL == GovOrg clientIdR clientNameR =
+    clientIdL == clientIdR && clientNameL == clientNameR
+  Company clientIdL clientNameL personL dutyL == Company clientIdR clientNameR personR dutyR =
+    clientIdL == clientIdR &&
+    clientNameL == clientNameR && personL == personR && dutyL == dutyR
+  Individual clientIdL personL == Individual clientIdR personR =
+    clientIdL == clientIdR && personL == personR
