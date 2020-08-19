@@ -278,3 +278,36 @@ treeInsert' t n@(Node' v l r) =
     LT -> Node' v (treeInsert' t l) r
     GT -> Node' v l (treeInsert' t r)
 treeInsert' t Leaf' = Node' t Leaf' Leaf'
+
+data BinaryTree'' a
+  = Node'' a (BinaryTree'' a) (BinaryTree'' a)
+  | Leaf''
+  deriving (Show)
+
+treeFind'' :: Ord a => a -> BinaryTree'' a -> Maybe a
+treeFind'' t (Node'' v l r) =
+  case compare t v of
+    EQ -> Just v
+    LT -> treeFind'' t l
+    GT -> treeFind'' t r
+treeFind'' _ Leaf'' = Nothing
+
+treeInsert'' :: Ord a => a -> BinaryTree'' a -> BinaryTree'' a
+treeInsert'' t n@(Node'' v l r) =
+  case compare t v of
+    EQ -> n
+    LT -> Node'' v (treeInsert'' t l) r
+    GT -> Node'' v l (treeInsert'' t r)
+treeInsert'' t Leaf'' = Node'' t Leaf'' Leaf''
+
+concat' :: Ord a => BinaryTree'' a -> BinaryTree'' a -> BinaryTree'' a
+concat' (Node'' v l r) t = concat' r (concat' l (treeInsert'' v t))
+concat' Leaf'' t = t
+
+newtype TGByPrice =
+  TGByPrice TravelGuide
+  deriving (Eq)
+
+instance Ord TGByPrice where
+  (TGByPrice (TravelGuide t1 a1 p1)) <= (TGByPrice (TravelGuide t2 a2 p2)) =
+    p1 < p2 || (p1 == p2 && (t1 < t2 || (t1 == t2 && a1 <= a2)))
