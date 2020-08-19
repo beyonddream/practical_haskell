@@ -43,3 +43,7 @@ should be "When you use Stack"
 page 129
 In such a case, you call graphFromEdges, which takes a list of triples, (value, key, [key]), the latest component being the aforementioned list of neighbors
 should be "last component"
+
+page 144
+"The special property of binary trees is that any node in the left subtree will hold only those values smaller than the one in the node..."
+should be "The special property of binary search trees..."
