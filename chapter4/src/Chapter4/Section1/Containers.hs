@@ -311,3 +311,49 @@ newtype TGByPrice =
 instance Ord TGByPrice where
   (TGByPrice (TravelGuide t1 a1 p1)) <= (TGByPrice (TravelGuide t2 a2 p2)) =
     p1 < p2 || (p1 == p2 && (t1 < t2 || (t1 == t2 && a1 <= a2)))
+
+data BinaryTree''' v c
+  = Node''' v c (BinaryTree''' v c) (BinaryTree''' v c)
+  | Leaf'''
+  deriving (Show, Eq, Ord)
+
+treeInsert''' ::
+     (Ord v, Ord c) => v -> c -> BinaryTree''' v c -> BinaryTree''' v c
+treeInsert''' v c n@(Node''' v'' c'' l r) =
+  case compare v v'' of
+    EQ -> n
+    LT -> Node''' v'' (min c c'') (treeInsert''' v c l) r
+    GT -> Node''' v'' (min c c'') l (treeInsert''' v c r)
+treeInsert''' v c Leaf''' = Node''' v c Leaf''' Leaf'''
+
+treeInsert4 ::
+     (Ord v, Monoid c) => v -> c -> BinaryTree''' v c -> BinaryTree''' v c
+treeInsert4 v c n@(Node''' v'' c'' l r) =
+  case compare v v'' of
+    EQ -> n
+    LT ->
+      let newLeft = treeInsert4 v c l
+          newCache = c'' <> cached newLeft <> cached r
+       in Node''' v'' newCache newLeft r
+    GT ->
+      let newRight = treeInsert4 v c r
+          newCache = c'' <> cached l <> cached newRight
+       in Node''' v'' newCache l newRight
+treeInsert4 v c Leaf''' = Node''' v c Leaf''' Leaf'''
+
+cached :: Monoid c => BinaryTree''' v c -> c
+cached (Node''' _ c _ _) = c
+cached Leaf''' = mempty
+
+newtype Min =
+  Min Double
+  deriving (Show)
+
+instance Semigroup Min where
+  Min x <> Min y = Min $ min x y
+
+instance Monoid Min where
+  mempty = Min infinity
+    where
+      infinity = 1 / 0
+  mappend = (<>) -- uses definition from Semigroup
