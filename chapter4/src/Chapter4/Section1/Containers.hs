@@ -6,8 +6,8 @@ import Data.Graph
 import Data.List (unfoldr)
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified Data.Tree as T
 import Data.Tree
-import System.Random
 
 insert :: Ord k => k -> a -> M.Map k a -> M.Map k a
 insert k v =
@@ -52,32 +52,6 @@ data Person =
     , lastName :: String
     }
   deriving (Show, Ord, Read)
-
-clients :: Int -> Int -> [Client Integer]
-clients count seed =
-  zipWith assignId (unfoldr (Just . client) (mkStdGen seed)) [1 .. count]
-
-client :: RandomGen g => g -> (Client Integer, g)
-client g =
-  case randomR (0 :: Int, 2) g of
-    (0, g') -> (defaultGovOrg, g')
-    (1, g') -> (defaultCompany, g')
-    (_, g') -> (defaultIndividual, g')
-
-assignId :: Client Integer -> Int -> Client Integer
-assignId c i = c {clientId = toInteger i}
-
-defaultGovOrg :: Client Integer
-defaultGovOrg = GovOrg 0 "govorg"
-
-defaultCompany :: Client Integer
-defaultCompany = Company 0 "company" defaultPerson "duty"
-
-defaultIndividual :: Client Integer
-defaultIndividual = Individual 0 defaultPerson
-
-defaultPerson :: Person
-defaultPerson = Person "fn" "ln"
 
 data ClientKind
   = GovOrgKind
@@ -357,3 +331,24 @@ instance Monoid Min where
     where
       infinity = 1 / 0
   mappend = (<>) -- uses definition from Semigroup
+
+modifyTravelGuidePrice :: Double -> [TravelGuide] -> [TravelGuide]
+modifyTravelGuidePrice m = map (\tg -> tg {price' = m * price' tg})
+
+modifyTravelGuidePriceMap ::
+     Double -> M.Map a TravelGuide -> M.Map a TravelGuide
+modifyTravelGuidePriceMap m = M.map (\tg -> tg {price' = m * price' tg})
+
+modifyTravelGuidePriceTree :: Double -> T.Tree TravelGuide -> T.Tree TravelGuide
+modifyTravelGuidePriceTree m = fmap (\tg -> tg {price' = m * price' tg})
+
+modifyTravelGuidePrice' :: Functor f => Double -> f TravelGuide -> f TravelGuide
+modifyTravelGuidePrice' m = fmap (\tg -> tg {price' = m * price' tg})
+
+data MaybeT a
+  = JustT a
+  | NothingT
+
+instance Functor MaybeT where
+  fmap f (JustT a) = JustT $ f a
+  fmap _ NothingT = NothingT

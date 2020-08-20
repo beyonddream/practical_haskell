@@ -47,3 +47,7 @@ should be "last component"
 page 144
 "The special property of binary trees is that any node in the left subtree will hold only those values smaller than the one in the node..."
 should be "The special property of binary search trees..."
+
+page 149
+"Some of the most important ones are All, which implements the monoid structure of Bool under the operation (&&) with neutral element True; and All, which does the same with (||) and neutral element False"
+should be "and Any, which does the same with (||)"
