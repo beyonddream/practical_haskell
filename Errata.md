@@ -51,3 +51,6 @@ should be "The special property of binary search trees..."
 page 149
 "Some of the most important ones are All, which implements the monoid structure of Bool under the operation (&&) with neutral element True; and All, which does the same with (||) and neutral element False"
 should be "and Any, which does the same with (||)"
+
+page 152 (e-book)
+        "In this case, just remember that a f b" should be "remember that, a f b"
