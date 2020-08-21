@@ -274,6 +274,10 @@ treeInsert'' t n@(Node'' v l r) =
     GT -> Node'' v l (treeInsert'' t r)
 treeInsert'' t Leaf'' = Node'' t Leaf'' Leaf''
 
+instance Functor BinaryTree'' where
+  fmap f (Node'' a l r) = Node'' (f a) (fmap f l) (fmap f r)
+  fmap _ Leaf'' = Leaf''
+
 concat' :: Ord a => BinaryTree'' a -> BinaryTree'' a -> BinaryTree'' a
 concat' (Node'' v l r) t = concat' r (concat' l (treeInsert'' v t))
 concat' Leaf'' t = t
