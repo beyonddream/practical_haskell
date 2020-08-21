@@ -356,3 +356,11 @@ data MaybeT a
 instance Functor MaybeT where
   fmap f (JustT a) = JustT $ f a
   fmap _ NothingT = NothingT
+
+instance Foldable MaybeT where
+  foldr f x (JustT a) = f a x
+  foldr _ x NothingT = x
+
+instance Foldable BinaryTree'' where
+  foldr f b (Node'' a l r) = f a (foldr f (foldr f b l) r)
+  foldr _ b Leaf'' = b
