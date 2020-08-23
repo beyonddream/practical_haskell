@@ -36,3 +36,11 @@ fibonacci2 = map fst $ iterate (\(n, n1) -> (n1, n + n1)) (0, 1)
 primes :: [Integer]
 primes =
   map head $ iterate (\x -> filter (\y -> y `mod` head x /= 0) (tail x)) [2 ..]
+
+sumForce :: [Integer] -> Integer
+sumForce xs = sumForce' xs 0
+  where
+    sumForce' [] z = z
+    sumForce' (y:ys) z =
+      let s = z + y
+       in s `seq` sumForce' ys s

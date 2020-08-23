@@ -23,6 +23,13 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
 
+executable profiling-example
+  main-is:             Main.hs
+  other-modules: Chapter5.Annotations
+  build-depends:       base ^>=4.12.0.0
+  hs-source-dirs:      app
+  default-language:    Haskell2010
+
 executable chapter5
   main-is:             Main.hs
   other-modules: Chapter5.Infinite

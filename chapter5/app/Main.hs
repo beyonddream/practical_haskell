@@ -1,8 +1,11 @@
 module Main where
 
-import qualified MyLib (someFunc)
+import Data.List
 
 main :: IO ()
-main = do
-  putStrLn "Hello, Haskell!"
-  MyLib.someFunc
+{- HLINT ignore main -}
+main = putStrLn $ show result
+
+result :: Integer
+{- HLINT ignore result -}
+result = foldl' (*) 1 [1 .. 100000]
