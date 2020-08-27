@@ -25,9 +25,10 @@ library
 
 executable chapter6
   main-is:             Main.hs
-  -- other-modules:
+  other-modules: Chapter6.KMeans
   -- other-extensions:
-  build-depends:       base ^>=4.12.0.0, chapter6
+  build-depends:       base ^>=4.12.0.0, containers >= 0.6.0.1 && < 0.7, persistent >= 2.9.2 && < 2.10, chapter6
+  ghc-options: -Wall
   hs-source-dirs:      app
   default-language:    Haskell2010
 
