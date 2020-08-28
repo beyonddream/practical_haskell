@@ -1,11 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Chapter6.KMeans where
 
 import Data.List
 import qualified Data.Map as M
-import Lens.Micro.Platform
+--import Lens.Micro.Platform
 
 class Ord v =>
       Vector v
@@ -79,6 +80,7 @@ initializeSimple 0 _ = []
 initializeSimple n v =
   (fromIntegral n, fromIntegral n) : initializeSimple (n - 1) v
 
+{-
 data Client i
   = GovOrg i String
   | Company i String Person String
@@ -87,5 +89,58 @@ data Client i
 data Person =
   Person String String
 
-firstName :: Lens' Person String
+        firstName :: Lens' Person String
 firstName = lens (\(Person f _) -> f) (\(Person _ l) newF -> Person newF l)
+
+lastName :: Lens' Person String
+lastName = lens (\(Person _ l) -> l) (\(Person f _) newL -> Person f newL)
+
+identifier :: Lens (Client i) (Client j) i j
+identifier =
+  lens
+    (\case
+       (GovOrg i _) -> i
+       (Company i _ _ _) -> i
+       (Individual i _) -> i)
+    (\client newId ->
+       case client of
+         GovOrg _ n -> GovOrg newId n
+         Company _ n p r -> Company newId n p r
+         Individual _ p -> Individual newId p)
+
+fullName :: Lens' Person String
+fullName =
+  lens
+    (\(Person f l) -> f ++ " " ++ l)
+    (\_ newFullName ->
+       case words newFullName of
+         f:l:_ -> Person f l
+         _ -> error "Incorrect name")
+         -}
+
+data Client i
+  = GovOrg
+      { _identifier :: i
+      , _name :: String
+      }
+  | Company
+      { _identifier :: i
+      , _name :: String
+      , _person :: Person
+      , _duty :: String
+      }
+  | Individual
+      { _identifier :: i
+      , _person :: Person
+      }
+  deriving (Show)
+
+data Person =
+  Person
+    { _firstName :: String
+    , _lastName :: String
+    }
+  deriving (Show)
+
+makeLenses "Client
+makeLenses "Person
