@@ -5,6 +5,7 @@ module Chapter6.KMeans where
 
 import Data.List
 import qualified Data.Map as M
+import Lens.Micro.Platform
 
 class Ord v =>
       Vector v
@@ -77,3 +78,14 @@ initializeSimple :: Int -> [e] -> [(Double, Double)]
 initializeSimple 0 _ = []
 initializeSimple n v =
   (fromIntegral n, fromIntegral n) : initializeSimple (n - 1) v
+
+data Client i
+  = GovOrg i String
+  | Company i String Person String
+  | Individual i Person
+
+data Person =
+  Person String String
+
+firstName :: Lens' Person String
+firstName = lens (\(Person f _) -> f) (\(Person _ l) newF -> Person newF l)

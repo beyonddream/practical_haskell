@@ -34,8 +34,8 @@ packages:
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-# extra-deps:
-# - acme-missiles-0.3
+#extra-deps:
+# - microlens-platform-0.3.11@sha256:dbb9e07bf62aa7bc8f5c91f7cad1ac6f1ea362e277f34b1c7441e9bfa2736793,2506
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
