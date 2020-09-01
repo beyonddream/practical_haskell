@@ -80,6 +80,15 @@ initializeSimple 0 _ = []
 initializeSimple n v =
   (fromIntegral n, fromIntegral n) : initializeSimple (n - 1) v
 
+fullName :: Lens' Person String
+fullName =
+  lens
+    (\(Person f l) -> f ++ " " ++ l)
+    (\_ newFullName ->
+       case words newFullName of
+         f:l:_ -> Person f l
+         _ -> error "Incorrect name")
+
 data Client i
   = GovOrg
       { _identifier :: i
