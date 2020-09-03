@@ -116,3 +116,87 @@ data Person =
 makeLenses ''Client
 
 makeLenses ''Person
+
+data TimeMachine =
+  TimeMachine
+    { _manufacturer :: Manufacturer
+    , _model :: Model
+    , _name' :: Name
+    , _direction :: Direction
+    , _price :: Price
+    }
+  deriving (Show)
+
+newtype Manufacturer =
+  Manufacturer String
+  deriving (Show)
+
+newtype Model =
+  Model Int
+  deriving (Show)
+
+newtype Name =
+  Name String
+  deriving (Show)
+
+data Direction
+  = PAST
+  | FUTURE
+  deriving (Show)
+
+newtype Price =
+  Price
+    { _value :: Float
+    }
+  deriving (Show)
+
+makeLenses ''TimeMachine
+
+makeLenses ''Manufacturer
+
+makeLenses ''Model
+
+makeLenses ''Name
+
+makeLenses ''Direction
+
+makeLenses ''Price
+
+makePremiumPrice :: [TimeMachine] -> Float -> [TimeMachine]
+makePremiumPrice timeMachines premiumPercentage =
+  timeMachines & traversed . price . value %~ (* (1 + premiumPercentage / 100))
+
+data KMeansState e v =
+  KMeansState
+    { _centroids :: [v]
+    , _points :: [e]
+    , _err :: Double
+    , _threshold :: Double
+    , _steps :: Int
+    }
+
+makeLenses ''KMeansState
+
+initializeState ::
+     (Int -> [e] -> [v]) -> Int -> [e] -> Double -> KMeansState e v
+initializeState i n pts t = KMeansState (i n pts) pts (1.0 / 0.0) t 0
+
+clusterAssignmentPhase' ::
+     (Ord v, Vector v, Vectorizable e v) => KMeansState e v -> M.Map v [e]
+clusterAssignmentPhase' = undefined
+        {- HLINT ignore kMeans'' -}
+
+kMeans'' ::
+     (Ord v, Vector v, Vectorizable e v) => KMeansState e v -> KMeansState e v
+kMeans'' state =
+  let assignments = clusterAssignmentPhase' state
+      state1 =
+        state & centroids . traversed %~
+        (\c -> centroid $ fmap toVector $ M.findWithDefault [] c assignments)
+      state2 =
+        state1 & err .~
+        sum (zipWith distance (state ^. centroids) (state1 ^. centroids))
+      state3 = state2 & steps +~ 1
+   in if state3 ^. err < state3 ^. threshold
+        then state3
+        else kMeans'' state3
