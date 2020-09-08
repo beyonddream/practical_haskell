@@ -6,8 +6,7 @@ module Chapter6.KMeans where
 
 import Data.List
 import qualified Data.Map as M
-
---import Debug.Trace
+import Data.Maybe
 import Lens.Micro.Platform
 
 class Ord v =>
@@ -215,3 +214,41 @@ kMeans'' state =
    in if state3 ^. err < state3 ^. threshold
         then state3
         else kMeans'' state3
+        {- HLINT ignore meanPurchase -}
+
+meanPurchase ::
+     Integer -- the client identifier
+  -> Double -- the mean purchase
+meanPurchase clientId =
+  let p = purchaseByClientId clientId
+      sum' = foldr (+) 0.0 $ catMaybes $ map purchaseValue p
+      total' = foldr (+) 0 $ map numberOfItemsPurchased p
+   in sum' / fromIntegral total'
+
+numberOfItemsPurchased :: Integer -> Integer
+numberOfItemsPurchased purchaseId =
+  fromMaybe 0 (numberItemsByPurchaseId purchaseId)
+
+purchaseByClientId :: Integer -> [Integer]
+purchaseByClientId _ = [1, 2, 3]
+
+numberItemsByPurchaseId :: Integer -> Maybe Integer
+numberItemsByPurchaseId _ = Just 3
+
+productIdByPurchaseId :: Integer -> Maybe Integer
+productIdByPurchaseId _ = Just 4
+
+priceByProductId :: Integer -> Maybe Double
+priceByProductId _ = Just 5.0
+
+purchaseValue :: Integer -> Maybe Double
+purchaseValue purchaseId =
+  case numberItemsByPurchaseId purchaseId of
+    Nothing -> Nothing
+    Just n ->
+      case productIdByPurchaseId purchaseId of
+        Nothing -> Nothing
+        Just prId ->
+          case priceByProductId prId of
+            Nothing -> Nothing
+            Just price' -> Just $ fromInteger n * price'
