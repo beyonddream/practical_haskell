@@ -252,3 +252,16 @@ purchaseValue purchaseId =
           case priceByProductId prId of
             Nothing -> Nothing
             Just price' -> Just $ fromInteger n * price'
+
+thenDo :: Maybe a -> (a -> Maybe b) -> Maybe b
+thenDo Nothing _ = Nothing
+thenDo (Just x) f = f x
+
+purchaseValue' :: Integer -> Maybe Double
+purchaseValue' purchaseId =
+  numberItemsByPurchaseId purchaseId `thenDo`
+  (\n ->
+     productIdByPurchaseId purchaseId `thenDo`
+     (\productId ->
+        priceByProductId productId `thenDo`
+        (\price'' -> Just $ fromInteger n * price'')))
