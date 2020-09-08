@@ -6,6 +6,8 @@ module Chapter6.KMeans where
 
 import Data.List
 import qualified Data.Map as M
+
+--import Debug.Trace
 import Lens.Micro.Platform
 
 class Ord v =>
@@ -57,7 +59,7 @@ kMeans ::
   -> [e] -- the information
   -> Double -- threshold
   -> ([v], Int) -- final centroids with no of iterations
-kMeans i k points threshold = kMeans' (i k points) points threshold 0
+kMeans i k points threshold = kMeans' (i k points) points threshold 1
 
 kMeans' ::
      (Ord v, Vector v, Vectorizable e v)
@@ -174,6 +176,7 @@ data KMeansState e v =
     , _threshold :: Double
     , _steps :: Int
     }
+  deriving (Show)
 
 makeLenses ''KMeansState
 
@@ -183,9 +186,21 @@ initializeState i n pts t = KMeansState (i n pts) pts (1.0 / 0.0) t 0
 
 clusterAssignmentPhase' ::
      (Ord v, Vector v, Vectorizable e v) => KMeansState e v -> M.Map v [e]
-clusterAssignmentPhase' = undefined
-        {- HLINT ignore kMeans'' -}
+clusterAssignmentPhase' state =
+  let p = state ^. points
+      c = state ^. centroids
+      initialMap = M.fromList $ zip c (repeat [])
+   in foldr
+        (\p' m ->
+           let chosenC = minimumBy (compareDistance p') c
+            in M.adjust (p' :) chosenC m)
+        initialMap
+        p
+  where
+    compareDistance p x y =
+      compare (distance x $ toVector p) (distance y $ toVector p)
 
+{- HLINT ignore kMeans'' -}
 kMeans'' ::
      (Ord v, Vector v, Vectorizable e v) => KMeansState e v -> KMeansState e v
 kMeans'' state =
