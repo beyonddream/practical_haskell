@@ -16,7 +16,8 @@ My worked out exercises from practical haskell book
 
 2. Below is the coc config
 
-`{
+```
+{
 "languageserver": {
   "haskell": {
     "command": "hie-wrapper",
@@ -37,6 +38,7 @@ My worked out exercises from practical haskell book
       }
     }
   }
+ }
 }
-}`
+```
 
