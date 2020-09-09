@@ -272,3 +272,27 @@ thenDo' :: State s a -> (a -> State s b) -> State s b
 thenDo' f g s =
   let (resultOfF, stateAfterF) = f s
    in g resultOfF stateAfterF
+
+data KMeansState' v =
+  KMeansState'
+    { centroids' :: [v]
+    , threshold' :: Double
+    , steps' :: Int
+    }
+
+newCentroids' :: (Ord v, Vector v, Vectorizable e v) => M.Map v [e] -> [v]
+newCentroids' = M.elems . fmap (centroid . map toVector)
+
+clusterAssignmentPhase'' ::
+     (Ord v, Vector v, Vectorizable e v) => [v] -> [e] -> M.Map v [e]
+clusterAssignmentPhase'' centrs points' =
+  let initialMap = M.fromList $ zip centrs (repeat [])
+   in foldr
+        (\p m ->
+           let chosenC = minimumBy (compareDistance p) centrs
+            in M.adjust (p :) chosenC m)
+        initialMap
+        points'
+  where
+    compareDistance p x y =
+      compare (distance x $ toVector p) (distance y $ toVector p)
