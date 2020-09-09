@@ -265,3 +265,10 @@ purchaseValue' purchaseId =
      (\productId ->
         priceByProductId productId `thenDo`
         (\price'' -> Just $ fromInteger n * price'')))
+
+type State s a = s -> (a, s)
+
+thenDo' :: State s a -> (a -> State s b) -> State s b
+thenDo' f g s =
+  let (resultOfF, stateAfterF) = f s
+   in g resultOfF stateAfterF
