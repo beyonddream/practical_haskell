@@ -283,9 +283,9 @@ data KMeansState' v =
 newCentroids' :: (Ord v, Vector v, Vectorizable e v) => M.Map v [e] -> [v]
 newCentroids' = M.elems . fmap (centroid . map toVector)
 
-clusterAssignmentPhase'' ::
+clusterAssignments ::
      (Ord v, Vector v, Vectorizable e v) => [v] -> [e] -> M.Map v [e]
-clusterAssignmentPhase'' centrs points' =
+clusterAssignments centrs points' =
   let initialMap = M.fromList $ zip centrs (repeat [])
    in foldr
         (\p m ->
@@ -296,3 +296,55 @@ clusterAssignmentPhase'' centrs points' =
   where
     compareDistance p x y =
       compare (distance x $ toVector p) (distance y $ toVector p)
+
+{- HLINT ignore kMeans''' -}
+kMeans''' ::
+     (Ord v, Vector v, Vectorizable e v) => [e] -> State (KMeansState' v) [v]
+kMeans''' points1 =
+  access centroids' `thenDo'`
+  (\prevCentrs ->
+     remain (clusterAssignments prevCentrs points1) `thenDo'`
+     (\assignments ->
+        remain (newCentroids' assignments) `thenDo'`
+        (\newCentrs ->
+           modify (\s -> s {centroids' = newCentrs}) `thenDo'`
+           (\_ ->
+              modify (\s -> s {steps' = steps' s + 1}) `thenDo'`
+              (\_ ->
+                 access threshold' `thenDo'`
+                 (\t ->
+                    remain (sum $ zipWith distance prevCentrs newCentrs) `thenDo'`
+                    (\err1 ->
+                       if err1 < t
+                         then (\s -> (newCentrs, s))
+                         else (kMeans''' points1))))))))
+
+initialState' ::
+     (Ord v, Vector v, Vectorizable e v)
+  => (Int -> [e] -> [v])
+  -> Int
+  -> [e]
+  -> Double
+  -> KMeansState' v
+initialState' i k pts t = KMeansState' (i k pts) t 0
+
+kMeans1 ::
+     (Ord v, Vector v, Vectorizable e v)
+  => (Int -> [e] -> [v])
+  -> Int
+  -> [e]
+  -> Double
+  -> [v]
+kMeans1 i k pts t = fst $ kMeans''' pts (initialState' i k pts t)
+
+{- HLINT ignore remain -}
+remain :: a -> (s -> (a, s))
+remain x = \s -> (x, s)
+
+{- HLINT ignore access -}
+access :: (s -> a) -> (s -> (a, s))
+access f = \s -> (f s, s)
+
+{- HLINT ignore modify -}
+modify :: (s -> s) -> (s -> ((), s))
+modify f = \s -> ((), f s)
