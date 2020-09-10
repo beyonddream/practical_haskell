@@ -4,6 +4,7 @@
 
 module Chapter6.KMeans where
 
+import Control.Monad (ap, liftM)
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe
@@ -348,3 +349,22 @@ access f = \s -> (f s, s)
 {- HLINT ignore modify -}
 modify :: (s -> s) -> (s -> ((), s))
 modify f = \s -> ((), f s)
+
+data MaybeT a
+  = JustT a
+  | NothingT
+
+thenDoT :: MaybeT a -> (a -> MaybeT b) -> MaybeT b
+thenDoT NothingT _ = NothingT
+thenDoT (JustT x) f = f x
+
+instance Monad MaybeT where
+  return = JustT
+  (>>=) = thenDoT
+
+instance Functor MaybeT where
+  fmap = liftM
+
+instance Applicative MaybeT where
+  pure = return
+  (<*>) = ap
