@@ -378,3 +378,17 @@ instance Functor MaybeT where
 instance Applicative MaybeT where
   pure = return
   (<*>) = ap
+
+data ExampleSt =
+  ExampleSt
+    { _increment :: Int
+    , _clients :: [Client Int]
+    }
+  deriving (Show)
+
+makeLenses ''ExampleSt
+        {-zoomCl :: State ExampleSt ()
+zoomCl = do n <- use increment
+            zoom (clients.traversed) $ do
+                    identifier += n
+                    person.fullName %= map toUpper-}
