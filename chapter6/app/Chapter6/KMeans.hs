@@ -267,6 +267,16 @@ purchaseValue' purchaseId =
         priceByProductId productId `thenDo`
         (\price'' -> Just $ fromInteger n * price'')))
 
+{- HLINT ignore purchaseValue'' -}
+purchaseValue'' :: Integer -> Maybe Double
+purchaseValue'' purchaseId =
+  numberItemsByPurchaseId purchaseId >>=
+  (\n ->
+     productIdByPurchaseId purchaseId >>=
+     (\productId ->
+        priceByProductId productId >>=
+        (\price'' -> return $ fromInteger n * price'')))
+
 type State s a = s -> (a, s)
 
 thenDo' :: State s a -> (a -> State s b) -> State s b
