@@ -4,14 +4,12 @@
 
 module Chapter6.StateLenses where
 
-import Control.Monad (unless)
 import Control.Monad.RWS
 import Control.Monad.ST
 import Control.Monad.State
 import Data.Char
 import Data.List
 import qualified Data.Map as M
-import Data.Monoid (Sum(..))
 import Data.STRef
 import Lens.Micro.Platform
 
@@ -118,6 +116,12 @@ class Vector v =>
 instance Vectorizable (Double, Double) (Double, Double) where
   toVector = id
 
+-- test kmeans
+initializeSimple :: Int -> [e] -> [(Double, Double)]
+initializeSimple 0 _ = []
+initializeSimple n v =
+  (fromIntegral n, fromIntegral n) : initializeSimple (n - 1) v
+
 clusterAssignmentPhase ::
      (Ord v, Vector v, Vectorizable e v) => [v] -> [e] -> M.Map v [e]
 clusterAssignmentPhase centroids points =
@@ -142,36 +146,40 @@ shouldStop centroids threshold =
 newCentroids' :: (Ord v, Vector v, Vectorizable e v) => M.Map v [e] -> [v]
 newCentroids' = M.elems . fmap (centroid . map toVector)
 
-clusterAssignments ::
-     (Ord v, Vector v, Vectorizable e v) => [v] -> [e] -> M.Map v [e]
-clusterAssignments centrs points' =
-  let initialMap = M.fromList $ zip centrs (repeat [])
-   in foldr
-        (\p m ->
-           let chosenC = minimumBy (compareDistance p) centrs
-            in M.adjust (p :) chosenC m)
-        initialMap
-        points'
-  where
-    compareDistance p x y =
-      compare (distance x $ toVector p) (distance y $ toVector p)
-
-kMeans' :: (Vector v, Vectorizable e v) => [e] -> RWS Double (Sum Int) [v] ()
-kMeans' points = do
-  prevCentrs <- get
-  let assignments = clusterAssignments prevCentrs points
-      newCentrs = newCentroids' assignments
-  put newCentrs
-  tell (Sum 1)
-  t <- ask
-  let err = sum $ zipWith distance prevCentrs newCentrs
-  unless (err < t) $ kMeans' points
+data KMeansState' v =
+  KMeansState'
+    { centroids' :: [v]
+    , threshold' :: Double
+    , steps' :: Int
+    }
 
 kMeans ::
-     (Vector v, Vectorizable e v)
-  => (Int -> [e] -> [v])
-  -> Int
+     (Ord v, Vector v, Vectorizable e v)
+  => (Int -> [e] -> [v]) -- initialization function
+  -> Int -- number of centroids
+  -> [e] -- the information
+  -> Double -- threshold
+  -> ([v], Int) -- final centroids with no of iterations
+kMeans i k points threshold =
+  runST $ do
+    c <- newSTRef (i k points)
+    d <- newSTRef 1
+    kMeans' c points threshold d
+
+kMeans' ::
+     (Num b, Vectorizable e v)
+  => STRef s [v]
   -> [e]
   -> Double
-  -> ([v], Sum Int)
-kMeans i n pts t = execRWS (kMeans' pts) t (i n pts)
+  -> STRef s b
+  -> ST s ([v], b)
+kMeans' centroids points threshold depth = do
+  c <- readSTRef centroids
+  d <- readSTRef depth
+  let assignments = clusterAssignmentPhase c points
+      oldNewCentroids = newCentroidPhase assignments
+      _ = writeSTRef centroids $ map snd oldNewCentroids
+      _ = modifySTRef' depth (+ 1)
+   in if shouldStop oldNewCentroids threshold
+        then return (c, d)
+        else kMeans' centroids points threshold depth
