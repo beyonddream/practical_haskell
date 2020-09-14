@@ -178,8 +178,8 @@ kMeans' centroids points threshold depth = do
   d <- readSTRef depth
   let assignments = clusterAssignmentPhase c points
       oldNewCentroids = newCentroidPhase assignments
-      _ = writeSTRef centroids $ map snd oldNewCentroids
-      _ = modifySTRef' depth (+ 1)
-   in if shouldStop oldNewCentroids threshold
-        then return (c, d)
-        else kMeans' centroids points threshold depth
+  writeSTRef centroids $ map snd oldNewCentroids
+  modifySTRef' depth (+ 1)
+  if shouldStop oldNewCentroids threshold
+    then return (c, d)
+    else kMeans' centroids points threshold depth
