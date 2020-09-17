@@ -27,7 +27,7 @@ library
 
 executable chapter7
   main-is:             Main.hs
-  -- other-modules:
+  other-modules: Chapter7.MonadPlus
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0, containers >= 0.6.0.1 && < 0.7, persistent >= 2.9.2 && < 2.10,
                        microlens-platform >= 0.3.11 && < 0.4, mtl >= 2.2.2 && < 2.3, chapter7
