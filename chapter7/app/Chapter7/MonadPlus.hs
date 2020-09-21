@@ -192,10 +192,10 @@ apriori minSupport minConfidence transactions =
     (generateNextLk minSupport transactions)
     (1, generateL1 minSupport transactions)
 
-paths :: [(Int, Int)] -> Int -> Int -> Logic [Int]
+paths :: [(Int, Int)] -> Int -> Int -> [[Int]]
 paths edges start end =
   let e_paths = do
-        (e_start, e_end) <- choices edges
+        (e_start, e_end) <- edges
         guard $ e_start == start
         subpath <- paths edges e_end end
         return $ start : subpath
@@ -203,5 +203,36 @@ paths edges start end =
         then return [end] `mplus` e_paths
         else e_paths
 
+pathsL :: [(Int, Int)] -> Int -> Int -> Logic [Int]
+pathsL edges start end =
+  let e_paths = do
+        (e_start, e_end) <- choices edges
+        guard $ e_start == start
+        subpath <- pathsL edges e_end end
+        return $ start : subpath
+   in if start == end
+        then return [end] `mplus` e_paths
+        else e_paths
+
 choices :: [a] -> Logic a
 choices = msum . map return
+
+pathsLFair :: [(Int, Int)] -> Int -> Int -> Logic [Int]
+pathsLFair edges start end =
+  let e_paths =
+        choices edges >>- \(e_start, e_end) ->
+          guard (e_start == start) >>
+          pathsLFair edges e_end end >>- \subpath -> return $ start : subpath
+   in if start == end
+        then return [end] `interleave` e_paths
+        else e_paths
+
+pathsL' :: [(Int, Int)] -> Int -> Int -> Logic [Int]
+pathsL' edges start end =
+  let e_paths =
+        choices edges >>= \(e_start, e_end) ->
+          guard (e_start == start) >> pathsL' edges e_end end >>= \subpath ->
+            return $ start : subpath
+   in if start == end
+        then return [end] `mplus` e_paths
+        else e_paths
