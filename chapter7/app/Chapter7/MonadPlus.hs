@@ -2,7 +2,7 @@
 
 module Chapter7.MonadPlus where
 
-import Control.Monad
+import Control.Monad.Logic
 import Data.List
 import Data.Maybe
 import Data.Set (Set)
@@ -191,3 +191,17 @@ apriori minSupport minConfidence transactions =
   unfoldr
     (generateNextLk minSupport transactions)
     (1, generateL1 minSupport transactions)
+
+paths :: [(Int, Int)] -> Int -> Int -> Logic [Int]
+paths edges start end =
+  let e_paths = do
+        (e_start, e_end) <- choices edges
+        guard $ e_start == start
+        subpath <- paths edges e_end end
+        return $ start : subpath
+   in if start == end
+        then return [end] `mplus` e_paths
+        else e_paths
+
+choices :: [a] -> Logic a
+choices = msum . map return
