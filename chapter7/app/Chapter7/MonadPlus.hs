@@ -3,6 +3,8 @@
 module Chapter7.MonadPlus where
 
 import Control.Monad.Logic
+import Control.Monad.Reader
+import Control.Monad.Writer
 import Data.List
 import Data.Maybe
 import Data.Set (Set)
@@ -63,8 +65,8 @@ data Gender
   | UnknownGender
   deriving (Show, Eq, Ord)
 
-data Product =
-  Product
+data Product' =
+  Product'
     { productId :: Integer
     , productType :: ProductType
     }
@@ -80,7 +82,7 @@ data ProductType
 data Purchase =
   Purchase
     { client :: Client
-    , products :: [Product]
+    , products :: [Product']
     }
   deriving (Show, Eq, Ord)
 
@@ -96,10 +98,10 @@ newtype Transaction =
   Transaction (Set PurchaseInfo)
   deriving (Eq, Ord)
 
-productsToPurchaseInfo :: [Product] -> Set PurchaseInfo
+productsToPurchaseInfo :: [Product'] -> Set PurchaseInfo
 productsToPurchaseInfo =
   foldr
-    (\(Product i t) pinfos ->
+    (\(Product' i t) pinfos ->
        S.insert (InfoPurchasedProduct i) $
        S.insert (InfoPurchasedProductType t) pinfos)
     S.empty
@@ -236,3 +238,12 @@ pathsL' edges start end =
    in if start == end
         then return [end] `mplus` e_paths
         else e_paths
+
+addPrefix :: String -> Reader String String
+addPrefix s = ask >>= \p -> return $ p ++ s
+
+addPrefixL :: [String] -> Reader String [String]
+addPrefixL = mapM addPrefix
+
+logInformation :: [String] -> Writer String ()
+logInformation = mapM_ (\s -> tell (s ++ "\n"))
