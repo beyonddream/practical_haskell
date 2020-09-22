@@ -247,3 +247,13 @@ addPrefixL = mapM addPrefix
 
 logInformation :: [String] -> Writer String ()
 logInformation = mapM_ (\s -> tell (s ++ "\n"))
+
+logInformation' :: [String] -> Writer String ()
+logInformation' infos = forM_ infos $ \s -> tell (s ++ "\n")
+
+factorialSteps :: Integer -> Writer (Sum Integer) Integer
+factorialSteps n = foldM (\f x -> tell (Sum 1) >> return (f * x)) 1 [1 .. n]
+
+{- HLINT ignore powerset' -}
+powerset' :: [a] -> [[a]]
+powerset' = filterM (\_ -> [False, True])
