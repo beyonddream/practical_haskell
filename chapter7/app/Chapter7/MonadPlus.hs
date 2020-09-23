@@ -1,7 +1,8 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, MonadComprehensions #-}
 
 module Chapter7.MonadPlus where
 
+import Control.Monad
 import Control.Monad.Logic
 import Control.Monad.Reader
 import Control.Monad.Writer
@@ -257,3 +258,19 @@ factorialSteps n = foldM (\f x -> tell (Sum 1) >> return (f * x)) 1 [1 .. n]
 {- HLINT ignore powerset' -}
 powerset' :: [a] -> [[a]]
 powerset' = filterM (\_ -> [False, True])
+
+pathsWriter :: [(Int, Int)] -> Int -> Int -> [[Int]]
+pathsWriter edges start end = map execWriter (pathsWriter' edges start end)
+
+pathsWriter' :: [(Int, Int)] -> Int -> Int -> [Writer [Int] ()]
+pathsWriter' edges start end =
+  let e_paths = do
+        (e_start, e_end) <- edges
+        guard $ e_start == start
+        subpath <- pathsWriter' edges e_end end
+        return $ do
+          tell [start]
+          subpath
+   in if start == end
+        then tell [start] : e_paths
+        else e_paths
