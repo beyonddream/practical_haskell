@@ -260,17 +260,15 @@ powerset' :: [a] -> [[a]]
 powerset' = filterM (\_ -> [False, True])
 
 pathsWriter :: [(Int, Int)] -> Int -> Int -> [[Int]]
-pathsWriter edges start end = map execWriter (pathsWriter' edges start end)
+pathsWriter edges start end = execWriterT (pathsWriter' edges start end)
 
-pathsWriter' :: [(Int, Int)] -> Int -> Int -> [Writer [Int] ()]
+pathsWriter' :: [(Int, Int)] -> Int -> Int -> WriterT [Int] [] ()
 pathsWriter' edges start end =
   let e_paths = do
-        (e_start, e_end) <- edges
+        (e_start, e_end) <- lift edges
         guard $ e_start == start
-        subpath <- pathsWriter' edges e_end end
-        return $ do
-          tell [start]
-          subpath
+        tell [start]
+        pathsWriter' edges e_end end
    in if start == end
-        then tell [start] : e_paths
+        then tell [start] `mplus` e_paths
         else e_paths
