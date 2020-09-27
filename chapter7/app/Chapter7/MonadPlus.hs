@@ -5,6 +5,7 @@ module Chapter7.MonadPlus where
 import Control.Monad
 import Control.Monad.Logic
 import Control.Monad.Reader
+import Control.Monad.State
 import Control.Monad.Writer
 import Data.List
 import Data.Maybe
@@ -255,6 +256,21 @@ logInformation' infos = forM_ infos $ \s -> tell (s ++ "\n")
 factorialSteps :: Integer -> Writer (Sum Integer) Integer
 factorialSteps n = foldM (\f x -> tell (Sum 1) >> return (f * x)) 1 [1 .. n]
 
+factorial' :: StateT Integer (State Integer) ()
+factorial' = do
+  n <- get
+  lift $
+    modify
+      (\x ->
+         if n == 0
+           then 1
+           else x * n)
+  modify (subtract 1)
+  when (n > 1) factorial'
+
+factorial :: Integer -> Integer
+factorial n = execState (execStateT factorial' n) 1
+
 {- HLINT ignore powerset' -}
 powerset' :: [a] -> [[a]]
 powerset' = filterM (\_ -> [False, True])
@@ -272,3 +288,9 @@ pathsWriter' edges start end =
    in if start == end
         then tell [start] `mplus` e_paths
         else e_paths
+
+readerWriterExample :: ReaderT Int (Writer String) Int
+readerWriterExample = do
+  x <- ask
+  lift . tell $ show x
+  return $ x + 1
