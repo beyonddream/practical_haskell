@@ -294,3 +294,10 @@ readerWriterExample = do
   x <- ask
   lift . tell $ show x
   return $ x + 1
+
+mysequence :: Monad m => [m a] -> m [a]
+mysequence [] = return []
+mysequence (x:xs) = do
+  r <- x
+  rr <- mysequence xs
+  return $ r : rr
