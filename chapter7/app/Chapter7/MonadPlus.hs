@@ -301,3 +301,10 @@ mysequence (x:xs) = do
   r <- x
   rr <- mysequence xs
   return $ r : rr
+
+myMapM :: Monad m => (a -> m b) -> [a] -> m [b]
+myMapM _ [] = return []
+myMapM f (x:xs) = do
+  y <- f x
+  yx <- myMapM f xs
+  return $ y : yx
