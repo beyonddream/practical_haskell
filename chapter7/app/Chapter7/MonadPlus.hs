@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, MonadComprehensions #-}
+{-# LANGUAGE LambdaCase, MonadComprehensions, FlexibleContexts #-}
 
 module Chapter7.MonadPlus where
 
@@ -308,3 +308,20 @@ myMapM f (x:xs) = do
   y <- f x
   yx <- myMapM f xs
   return $ y : yx
+
+type Graph = [(Int, Int)]
+
+paths' ::
+     (MonadReader Graph m, MonadWriter [Int] m, MonadPlus m)
+  => Int
+  -> Int
+  -> m ()
+paths' start end =
+  let e_paths = do
+        (e_start, e_end) <- ask >>= msum . map return
+        guard $ e_start == start
+        tell [start]
+        paths' e_end end
+   in if start == end
+        then tell [end]
+        else e_paths
