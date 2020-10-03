@@ -1,5 +1,8 @@
 module Chapter8.ParEx where
 
+import Control.DeepSeq
+import Control.Monad.Par
+
 findFactors :: Integer -> [Integer]
 findFactors 1 = [1]
 findFactors n =
@@ -14,3 +17,12 @@ findFactor n m
 
 findTwoFactors :: Integer -> Integer -> ([Integer], [Integer])
 findTwoFactors x y = (findFactors x, findFactors y)
+
+findTwoFactors' :: Integer -> Integer -> ([Integer], [Integer])
+findTwoFactors' x y =
+  runPar $ do
+    factorsXVar <- spawnP $ findFactors x
+    let factorsY = findFactors y
+        _ = rnf factorsY
+    factorsX <- get factorsXVar
+    return (factorsX, factorsY)
