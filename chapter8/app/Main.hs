@@ -7,4 +7,9 @@ main :: IO ()
 main = do
   putStrLn "Hello, Haskell!"
   MyLib.someFunc
-  print $ findTwoFactors' 7 10
+  print $
+    printTicket
+      2
+      3
+      [(1, "Client1"), (2, "Client2")]
+      [(3, "product3"), (5, "product5")]
