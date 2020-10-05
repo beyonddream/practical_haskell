@@ -27,6 +27,8 @@ findTwoFactors' x y =
     factorsX <- get factorsXVar
     return (factorsX, factorsY)
 
+-- run this using `stack run -- +RTS -N2` N is number of cores to be used. Leave out for GHC to figure out itself.
+-- Also, add this ghc options in the cabal file : ghc-options: -threaded
 printTicket :: Int -> Int -> [(Int, String)] -> [(Int, String)] -> String
 printTicket idC idP clients products =
   runPar $ do
