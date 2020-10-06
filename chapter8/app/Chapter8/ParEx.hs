@@ -172,3 +172,32 @@ generateL1 minSupp transactions =
              then [fs]
              else [])
         l1NotFiltered
+
+generateNextLK ::
+     Double
+  -> [Transaction]
+  -> (Int, [FrequentSet])
+  -> Maybe ([FrequentSet], (Int, [FrequentSet]))
+generateNextLK _ _ (_, []) = Nothing
+generateNextLK minSupp transactions (k, lk) =
+  let ck1 =
+        noDups $
+        [ FrequentSet $ a `S.union` b
+        | FrequentSet a <- lk
+        , FrequentSet b <- lk
+        , S.size (a `S.intersection` b) == k - 1
+        ]
+      lk1 = runPar $ filterLk minSupp transactions ck1
+   in Just (lk1, (k + 1, lk1))
+
+filterLk :: Double -> [Transaction] -> [FrequentSet] -> Par [FrequentSet]
+filterLk minSupp transactions ck =
+  let lengthCk = length ck
+   in if lengthCk <= 5
+        then return $ filter (\fs -> setSupport transactions fs > minSupp) ck
+        else let (l, r) = splitAt (lengthCk `div` 2) ck
+              in do lVar <- spawn $ filterLk minSupp transactions l
+                    lFiltered <- get lVar
+                    rVar <- spawn $ filterLk minSupp transactions r
+                    rFiltered <- get rVar
+                    return $ lFiltered ++ rFiltered
