@@ -59,3 +59,8 @@ page 161
 " As a special offer, Timely Inc. supplies an infinite number of time machines to travel to the year 2021"
 But the example is "infinite2020Machines = TM "Timely Inc." 2020 : infinite2020Machines"
 Either 2021 has to be changed to 2020 or the example has to be changed to 2021
+
+page 281
+"Since you don’t need to perform any computation, you can use the readMVar function, which is equivalent to readMVar followed by putMVar with that same value."
+
+Should be "equivalent to takeMVar"
