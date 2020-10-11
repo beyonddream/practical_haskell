@@ -1,7 +1,14 @@
+{-# LANGUAGE BlockArguments #-}
+
 module Chapter8.STMEx where
 
 import Control.Concurrent
+import Control.Concurrent.STM
+import Control.Concurrent.STM.Delay
 import Control.Monad
+import Data.List
+import Data.Maybe
+import Debug.Trace
 import System.Random
 
 updateMoney :: MVar Integer -> IO ()
@@ -22,15 +29,16 @@ randomDelay = do
 
 forkDelay :: Int -> IO () -> IO ()
 forkDelay n f = replicateM_ n $ forkIO (randomDelay >> f)
+        {- HLINT ignore updateMoneyAndStock -}
 
 updateMoneyAndStock ::
-     Eq a => a -> Integer -> MVar Integer -> MVar [(a, Integer)] -> IO ()
+     Eq a => a -> Integer -> TVar Integer -> TVar [(a, Integer)] -> STM ()
 updateMoneyAndStock product' price money stock = do
-  s <- takeMVar stock
+  s <- readTVar stock
   let Just productNo = lookup product' s
   if productNo > 0
     then do
-      m <- takeMVar money
+      m <- readTVar money
       let newS =
             map
               (\(k, v) ->
@@ -38,11 +46,52 @@ updateMoneyAndStock product' price money stock = do
                    then (k, v - 1)
                    else (k, v))
               s
-      putMVar money (m + price) >> putMVar stock newS
-    else putMVar stock s
+      writeTVar money (m + price) >> writeTVar stock newS
+    else return ()
 
-printMoneyAndStock :: Show a => MVar Integer -> MVar [(a, Integer)] -> IO ()
+printMoneyAndStock :: Show a => TVar Integer -> TVar [(a, Integer)] -> IO ()
 printMoneyAndStock money stock = do
-  m <- readMVar money
-  s <- readMVar stock
+  m <- readTVarIO money
+  s <- readTVarIO stock
   putStrLn $ show m ++ "\n" ++ show s
+
+performTimeTravel ::
+     String
+  -> Integer
+  -> TVar Integer
+  -> Integer
+  -> TVar [Integer]
+  -> Delay
+  -> STM ()
+performTimeTravel name year capacity maxCapacity travelYears wait = do
+  startTravel name capacity maxCapacity travelYears year
+  waitDelay wait
+  endTravel name capacity travelYears year
+
+startTravel ::
+     String -> TVar Integer -> Integer -> TVar [Integer] -> Integer -> STM ()
+startTravel name capacity maxCapacity travelYears year = do
+  c <- readTVar capacity
+  years <- readTVar travelYears
+  when
+    (c == maxCapacity || isJust (find (== year) years))
+    (traceM ("retrying" ++ name) >> retry)
+  writeTVar capacity (c + 1)
+  writeTVar travelYears (insert year years)
+  c' <- readTVar capacity
+  y' <- readTVar travelYears
+  traceM
+    ("starting travel for : " ++
+     show name ++ " " ++ show year ++ " " ++ show c' ++ " " ++ show y')
+
+endTravel :: String -> TVar Integer -> TVar [Integer] -> Integer -> STM ()
+endTravel name capacity travelYears year = do
+  c <- readTVar capacity
+  years <- readTVar travelYears
+  writeTVar capacity (c - 1)
+  writeTVar travelYears (delete year years)
+  c' <- readTVar capacity
+  y' <- readTVar travelYears
+  traceM
+    ("ending travel for: " ++
+     show name ++ " " ++ show year ++ " " ++ show c' ++ " " ++ show y')
