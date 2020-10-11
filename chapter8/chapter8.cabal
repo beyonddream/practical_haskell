@@ -29,7 +29,7 @@ library
 
 executable chapter8
   main-is:             Main.hs
-  other-modules: Chapter8.ParEx, Chapter8.STMEx
+  other-modules: Chapter8.ParEx, Chapter8.STMEx, Chapter8.QEx
   build-depends:       base ^>=4.12.0.0, containers >= 0.6.0.1 && < 0.7, persistent >= 2.9.2 && < 2.10,
                        microlens-platform >= 0.3.11 && < 0.4, mtl >= 2.2.2 && < 2.3, logict >= 0.7.0.2 && < 0.8,
                        monad-par >= 0.3.5 && < 0.4, deepseq >= 1.4.4.0 && < 1.5, random >= 1.1 && < 1.2,
