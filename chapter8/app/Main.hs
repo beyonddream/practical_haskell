@@ -1,15 +1,26 @@
 module Main where
 
+import Chapter8.AmqpEx
 import Chapter8.QEx
 import Chapter8.STMEx
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.Delay
+import System.Environment
 import System.IO
 import System.Random
 
 main :: IO ()
 main = do
+  conn <- initialize
+  args <- getArgs
+  case args of
+    "backend":_ -> backend conn
+    "frontend":_ -> do
+      frontend conn
+      _ <- getLine
+      return ()
+        {-main = do
   q <- newTBQueueIO 3
   travelYears <- newTVarIO []
   r <- randomRIO (1, 3)
@@ -20,7 +31,7 @@ main = do
   _ <- forkIO $ timeMachineRequestor q "tm3" 2022 travelYears travelDuration
   _ <- forkIO $ timeMachineRequestor q "tm4" 2023 travelYears travelDuration
   _ <- getLine
-  return ()
+  return ()-}
         {-main :: IO ()
 main = do
   capacity <- newTVarIO 0

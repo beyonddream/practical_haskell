@@ -64,3 +64,7 @@ page 281
 "Since you don’t need to perform any computation, you can use the readMVar function, which is equivalent to readMVar followed by putMVar with that same value."
 
 Should be "equivalent to takeMVar"
+
+page 293
+downgrade to below.
+amqp-worker-0.2.5@sha256:59d6454305e9d416a20420c65119a5b4f988d0aea69f4c0d97b5c61205313059,1930

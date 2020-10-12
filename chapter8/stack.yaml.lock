@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: amqp-worker-0.2.5@sha256:59d6454305e9d416a20420c65119a5b4f988d0aea69f4c0d97b5c61205313059,1930
+    pantry-tree:
+      size: 772
+      sha256: a158130e099855f6b560cbbf1a7f8803f105f0a722943b998703eb3498a4879e
+  original:
+    hackage: amqp-worker-0.2.5@sha256:59d6454305e9d416a20420c65119a5b4f988d0aea69f4c0d97b5c61205313059,1930
 snapshots:
 - completed:
     size: 524996
