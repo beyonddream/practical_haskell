@@ -2,12 +2,34 @@
 
 module Main where
 
+import Control.Monad
 import Control.Monad.Loops
 import System.IO
 import System.Random
 
 main :: IO ()
 main = do
+  expected <- getRandomNumber 3 17
+  putStrLn "Guess a number between 3 and 17"
+  guessNumber expected 4
+
+getRandomNumber :: Int -> Int -> IO Int
+getRandomNumber start end = randomRIO (start, end)
+
+guessNumber :: Int -> Int -> IO ()
+guessNumber expected maxGuesses = do
+  actual <- fmap read getLine
+  if actual == expected
+    then putStrLn "Congrats! You have guessed correctly."
+    else if maxGuesses /= 0
+           then do
+             putStrLn "Please try again:"
+             guessNumber expected (maxGuesses - 1)
+           else putStrLn $
+                "Exhausted all tries. The number is " ++ show expected
+
+print3 :: IO ()
+print3 = do
   (initial :: Int) <- fmap read getLine
   jumps <-
     unfoldrM
