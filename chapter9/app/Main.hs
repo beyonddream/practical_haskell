@@ -1,14 +1,88 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, RecordWildCards #-}
 
 module Main where
 
 import Control.Monad
 import Control.Monad.Loops
+import System.Environment
 import System.IO
 import System.Random
 
 main :: IO ()
-main = do
+main = readWriteEx
+
+data Client i
+  = GovOrg
+      { clientId :: i
+      , clientName :: String
+      }
+  | Company
+      { clientId :: i
+      , clientName :: String
+      , person :: Person
+      , duty :: String
+      }
+  | Individual
+      { clientId :: i
+      , person :: Person
+      }
+  deriving (Show, Read)
+
+data Person =
+  Person
+    { firstName :: String
+    , lastName :: String
+    }
+  deriving (Show, Ord, Read)
+
+instance Eq Person where
+  Person firstNameL lastNameL == Person firstNameR lastNameR =
+    firstNameL == firstNameR && lastNameL == lastNameR
+
+{- HLINT ignore processClients -}
+processClients :: IO ()
+processClients = do
+  (inFile:outFile:_) <- getArgs
+  inHandle <- openFile inFile ReadMode
+  outFileGovHandle <- openFile (outFile ++ "_gov") WriteMode
+  outFileCompHandle <- openFile (outFile ++ "_comp") WriteMode
+  outFileIndvHandle <- openFile (outFile ++ "_indv") WriteMode
+  loop inHandle outFileGovHandle outFileCompHandle outFileIndvHandle
+  hClose inHandle
+  hClose outFileGovHandle
+  hClose outFileCompHandle
+  hClose outFileIndvHandle
+  where
+    loop inHandle outFileGovHandle outFileCompHandle outFileIndvHandle = do
+      isEof <- hIsEOF inHandle
+      unless isEof $ do
+        (client :: Client Integer) <- fmap read $ hGetLine inHandle
+        case client of
+          GovOrg {..} -> hPutStrLn outFileGovHandle (show client)
+          Company {..} -> hPutStrLn outFileCompHandle (show client)
+          Individual {..} -> hPutStrLn outFileIndvHandle (show client)
+        loop inHandle outFileGovHandle outFileCompHandle outFileIndvHandle
+
+readWriteEx :: IO ()
+readWriteEx = do
+  (inFile:outFile:_) <- getArgs
+  inHandle <- openFile inFile ReadMode
+  outHandle <- openFile outFile WriteMode
+  loop inHandle outHandle
+  hClose inHandle
+  hClose outHandle
+  where
+    loop inHandle outHandle = do
+      isEof <- hIsEOF inHandle
+      unless isEof $ do
+        client <- hGetLine inHandle
+        (winner :: Bool) <- randomIO
+        (year :: Int) <- randomRIO (0, 3000)
+        hPrint outHandle $ show (client, winner, year)
+        loop inHandle outHandle
+
+playGame :: IO ()
+playGame = do
   expected <- getRandomNumber 3 17
   putStrLn "Guess a number between 3 and 17"
   guessNumber expected 4
@@ -49,30 +123,6 @@ print2 = do
   lName <- getLine
   putChar '>' >> putChar ' '
   print $ Person fName lName
-
-data Person =
-  Person
-    { firstName :: String
-    , lastName :: String
-    }
-  deriving (Show, Eq, Ord)
-
-data Client i
-  = GovOrg
-      { clientId :: i
-      , clientName :: String
-      }
-  | Company
-      { clientId :: i
-      , clientName :: String
-      , person :: Person
-      , duty :: String
-      }
-  | Individual
-      { clientId :: i
-      , person :: Person
-      }
-  deriving (Show, Eq, Ord)
 
 print1 :: IO ()
 print1 = do
