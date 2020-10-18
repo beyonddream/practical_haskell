@@ -2,6 +2,7 @@
 
 module Main where
 
+import Control.Exception
 import Control.Monad
 import Control.Monad.Loops
 import System.Environment
@@ -43,15 +44,27 @@ instance Eq Person where
 processClients :: IO ()
 processClients = do
   (inFile:outFile:_) <- getArgs
-  inHandle <- openFile inFile ReadMode
-  outFileGovHandle <- openFile (outFile ++ "_gov") WriteMode
-  outFileCompHandle <- openFile (outFile ++ "_comp") WriteMode
-  outFileIndvHandle <- openFile (outFile ++ "_indv") WriteMode
-  loop inHandle outFileGovHandle outFileCompHandle outFileIndvHandle
-  hClose inHandle
-  hClose outFileGovHandle
-  hClose outFileCompHandle
-  hClose outFileIndvHandle
+  bracket
+    (openFile inFile ReadMode)
+    hClose
+    (\inHandle ->
+       bracket
+         (openFile (outFile ++ "_gov") WriteMode)
+         hClose
+         (\outFileGovHandle ->
+            bracket
+              (openFile (outFile ++ "_comp") WriteMode)
+              hClose
+              (\outFileCompHandle ->
+                 bracket
+                   (openFile (outFile ++ "_indv") WriteMode)
+                   hClose
+                   (\outFileIndvHandle ->
+                      loop
+                        inHandle
+                        outFileGovHandle
+                        outFileCompHandle
+                        outFileIndvHandle))))
   where
     loop inHandle outFileGovHandle outFileCompHandle outFileIndvHandle = do
       isEof <- hIsEOF inHandle
