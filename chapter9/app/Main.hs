@@ -5,12 +5,17 @@ module Main where
 import Control.Exception
 import Control.Monad
 import Control.Monad.Loops
+import Data.Conduit
 import System.Environment
 import System.IO
 import System.Random
 
 main :: IO ()
-main = readWriteEx
+main = do
+  h <- openFile "./file_ex" ReadMode
+  s <- hGetContents h
+  hClose h
+  print s
 
 data Client i
   = GovOrg
@@ -144,3 +149,15 @@ print1 = do
   place <- getLine
   let year = length place * 10
   putStrLn $ "You should travel to year " ++ show year
+
+people :: Monad m => ConduitT (Client i) Person m ()
+people = do
+  client <- await
+  case client of
+    Nothing -> return ()
+    Just c -> do
+      case c of
+        Company {person = p} -> yield p
+        Individual {person = p} -> yield p
+        _ -> return ()
+      people
