@@ -1,17 +1,30 @@
-{-# LANGUAGE ScopedTypeVariables, RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables, FlexibleContexts, RecordWildCards
+  #-}
 
 module Main where
 
 import Control.Exception
 import Control.Monad
 import Control.Monad.Loops
+import Control.Monad.State
+import Control.Monad.Trans
+import qualified Data.ByteString.Char8 as BS
 import Data.Conduit
+import qualified Data.Conduit.Binary as B
+import qualified Data.Conduit.List as L
+import Data.Monoid
 import System.Environment
 import System.IO
 import System.Random
 
 main :: IO ()
 main = do
+  let clients = [GovOrg 1 "Zas", Individual 2 (Person "Alejandro" "Serrano")]
+      conduitGovOrgs = L.sourceList clients .| countGovOrgs
+  print $ execState (runConduit conduitGovOrgs) 0
+
+sampleReadFileEx :: IO ()
+sampleReadFileEx = do
   h <- openFile "./file_ex" ReadMode
   s <- hGetContents h
   hClose h
@@ -161,3 +174,72 @@ people = do
         Individual {person = p} -> yield p
         _ -> return ()
       people
+
+countGovOrgs :: MonadState Int m => ConduitT (Client i) Void m Int
+countGovOrgs = do
+  client <- await
+  case client of
+    Nothing -> lift get
+    Just c -> do
+      case c of
+        GovOrg {} -> lift $ modify (+ 1)
+        _ -> return ()
+      countGovOrgs
+
+winners :: ConduitT (Client i) (Client i, Bool, Int) IO ()
+winners = do
+  client <- await
+  case client of
+    Nothing -> return ()
+    Just c -> do
+      (w :: Bool) <- lift randomIO
+      (y :: Int) <- lift $ randomRIO (0, 3000)
+      yield (c, w, y)
+      winners
+
+unfoldS :: Monad m => (b -> Maybe (a, b)) -> b -> ConduitT i a m ()
+unfoldS f s =
+  let result = f s
+   in case result of
+        Nothing -> return ()
+        Just (curr, next) -> do
+          yield curr
+          unfoldS f next
+
+mapS :: Monad m => (a -> b) -> ConduitT a b m ()
+mapS f = do
+  input <- await
+  case input of
+    Nothing -> return ()
+    Just v -> do
+      yield (f v)
+      mapS f
+
+filterS :: Monad m => (a -> Bool) -> ConduitT a a m ()
+filterS f = do
+  input <- await
+  case input of
+    Nothing -> return ()
+    Just v -> do
+      when (f v) $ yield v
+      filterS f
+
+foldS :: Monad m => (b -> a -> b) -> b -> ConduitT a o m b
+foldS f s = do
+  input <- await
+  case input of
+    Nothing -> return s
+    Just v -> do
+      let acc = f s v
+      foldS f acc
+
+winnersFile :: (Monad m, MonadIO m) => ConduitT BS.ByteString BS.ByteString m ()
+winnersFile = do
+  client <- await
+  case client of
+    Nothing -> return ()
+    Just c -> do
+      (w :: Bool) <- liftIO randomIO
+      (y :: Int) <- liftIO $ randomRIO (0, 3000)
+      yield $ c <> BS.pack (" " ++ show w ++ " " ++ show y)
+      winnersFile

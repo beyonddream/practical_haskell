@@ -20,7 +20,7 @@ library
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0, random >= 1.1 && < 1.2, monad-loops >= 0.4.3 && < 0.5,
-                       conduit >= 1.3.1.2 && < 1.3.2
+                       conduit-extra >= 1.3.4 && < 1.4, mtl >= 2.2.2 && < 2.3, conduit >= 1.3.1.2 && < 1.3.2
   hs-source-dirs:      src
   default-language:    Haskell2010
 
@@ -29,7 +29,8 @@ executable chapter9
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0, random >= 1.1 && < 1.2, monad-loops >= 0.4.3 && < 0.5,
-                       conduit >= 1.3.1.2 && < 1.3.2, chapter9
+                       conduit-extra >= 1.3.4 && < 1.4, mtl >= 2.2.2 && < 2.3, conduit >= 1.3.1.2 && < 1.3.2,
+                       chapter9
   hs-source-dirs:      app
   default-language:    Haskell2010
 
