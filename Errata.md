@@ -71,3 +71,7 @@ amqp-worker-0.2.5@sha256:59d6454305e9d416a20420c65119a5b4f988d0aea69f4c0d97b5c61
 
 page 350
 replace "(" "\\(" . replace ")" "\\(" . pack should be replace "(" "\\(" . replace ")" "\\)" . pack
+
+page 351
+In page 351, there is no corresponding change for saveClients function shown in the Builders example.
+fixed it with `L.sourceList clients .| L.map (L.toStrict . B.toLazyText . clientToText)`
