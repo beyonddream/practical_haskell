@@ -179,11 +179,13 @@ aProduct =
   char ')'
 
 parseProducts :: Parser [Product']
-parseProducts = sepBy aProduct (option ' ' $ char ',')
+parseProducts = sepBy aProduct $ char ','
+        {- HLINT ignore aPurchase -}
 
 aPurchase :: Parser Purchase
 aPurchase =
   Purchase <$ string "purchase(" <*> aClient <* char ',' <* char '[' <*>
   parseProducts <*
+  (option ' ' $ char ',') <*
   char ']' <*
   char ')'
