@@ -2,6 +2,8 @@
 
 module Chapter10.TextEx where
 
+import Control.Applicative
+import Data.Attoparsec.Text
 import Data.Conduit
 import qualified Data.Conduit.Binary as B
 import qualified Data.Conduit.List as L
@@ -44,12 +46,14 @@ data Product' =
     , price :: Double
     , description :: String
     }
+  deriving (Show, Eq, Ord, Read)
 
 data Purchase =
   Purchase
     { client :: Client Int
     , products :: [Product']
     }
+  deriving (Show, Read)
 
 instance Eq Person where
   Person firstNameL lastNameL == Person firstNameR lastNameR =
@@ -114,3 +118,72 @@ escapeString =
   replace "," "\\," .
   replace "(" "\\(" .
   replace ")" "\\)" . replace "[" "\\[" . replace "]" "\\]" . pack
+
+data GreetingYear =
+  GreetingYear Text Int
+
+greetingYearParser :: Parser GreetingYear
+greetingYearParser =
+  GreetingYear <$> (string "hello" <> string "bye") <*> decimal
+
+greetingYearParserS :: Parser GreetingYear
+greetingYearParserS =
+  (\g _ y -> GreetingYear g y) <$> (string "hello" <|> string "bye") <*>
+  char ' ' <*>
+  decimal
+
+greetingYearParserS' :: Parser GreetingYear
+greetingYearParserS' =
+  GreetingYear <$> (string "hello" <|> string "bye") <* char ' ' <*> decimal
+        {- HLINT ignore aChar -}
+
+aChar :: Parser Char
+aChar =
+  (const ',') <$> (string "\\,") <|> (const '\n') <$> (string "\\n") <|>
+  (const '(') <$> (string "\\(") <|>
+  (const ')') <$> (string "\\)") <|>
+  (const '[') <$> (string "\\[") <|>
+  (const ']') <$> (string "\\]") <|>
+  satisfy (notInClass ",\n()[]")
+
+aString :: Parser String
+aString = ((:) <$> aChar <*> aString) <|> pure ""
+
+aString' = many aChar
+
+aPerson :: Parser Person
+aPerson =
+  Person <$ string "person(" <*> aString <* char ',' <*> aString <* char ')'
+
+aClient :: Parser (Client Int)
+aClient =
+  GovOrg <$ string "client(gov," <*> decimal <* char ',' <*> aString <* char ')' <|>
+  Company <$ string "client(com," <*> decimal <* char ',' <*> aString <*
+  char ',' <*>
+  aPerson <*
+  char ',' <*>
+  aString <*
+  char ')' <|>
+  Individual <$ string "client(ind," <*> decimal <* char ',' <*> aPerson <*
+  char ')'
+
+parseClients :: Parser [Client Int]
+parseClients = sepBy aClient (char '\n')
+
+aProduct :: Parser Product'
+aProduct =
+  Product' <$ string "product(" <*> decimal <* char ',' <*> aString <* char ',' <*>
+  double <*
+  char ',' <*>
+  aString <*
+  char ')'
+
+parseProducts :: Parser [Product']
+parseProducts = sepBy aProduct (option ' ' $ char ',')
+
+aPurchase :: Parser Purchase
+aPurchase =
+  Purchase <$ string "purchase(" <*> aClient <* char ',' <* char '[' <*>
+  parseProducts <*
+  char ']' <*
+  char ')'
