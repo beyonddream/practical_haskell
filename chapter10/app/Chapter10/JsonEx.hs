@@ -62,12 +62,6 @@ jsonToClient (Object o) =
     _ -> Control.Applicative.empty
 jsonToClient _ = Control.Applicative.empty
 
-instance ToJSON (Client Integer) where
-  toJSON = clientToJSON
-
-instance FromJSON i => FromJSON (Client i) where
-  parseJSON = jsonToClient
-
 personToJSON :: Person -> Value
 personToJSON (Person f l) =
   object ["first" .= String (pack f), "last" .= String (pack l)]
@@ -103,3 +97,9 @@ instance ToJSON Person where
 
 instance FromJSON Person where
   parseJSON = jsonToPerson
+
+instance ToJSON (Client Integer) where
+  toJSON = clientToJSON
+
+instance FromJSON i => FromJSON (Client i) where
+  parseJSON = jsonToClient
