@@ -8,6 +8,7 @@ module Chapter11.DBEx where
 import Chapter11.Gender
 import Control.Monad.Logger
 import Control.Monad.Trans
+import Data.Int
 import Database.Persist.Sqlite
 import Database.Persist.TH
 
@@ -27,5 +28,12 @@ share
             age Int Maybe
             gender Gender Maybe
             UniqueClient firstName lastName address country
+            deriving Show
+        Product
+            name String
+            description String
+            price Double
+            stock Int64
+            UniqueProductName name
             deriving Show
         |]

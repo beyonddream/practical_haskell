@@ -14,8 +14,8 @@ exampleMigration =
 
 exampleRun =
   runSqlite @IO @SqlBackend "example.db" $ do
-    spain <- insert $ Country "Spain" False
+    carri <- insert $ Country "Carribean" False
+    _product1 <- insert $ Product "product1" "A new product1" 123.5 10
     _client1 <-
-      insert $
-      Client "Alejandro" "Serrano" "Home Town, 1" spain (Just 30) (Just Male)
+      insert $ Client "Ak" "uu" "Home Town, 1" carri (Just 3) (Just Male)
     return ()
