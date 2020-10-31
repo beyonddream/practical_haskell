@@ -36,4 +36,10 @@ share
             stock Int64
             UniqueProductName name
             deriving Show
+        Purchase
+            client ClientId
+            product ProductId
+            number Int
+            amount Double
+            deriving Show
         |]
