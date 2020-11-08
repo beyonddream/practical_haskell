@@ -39,6 +39,27 @@ packages:
       sha256: b8371b82b496602010a3a5b8e33a0e9108a5a3c70d99f842859bae89face740c
   original:
     hackage: focus-0.1.5.2@sha256:fc5c76a5be3a9a1c456106d6f389939299c7e05a1a24938b909f043e36a3e37b,1519
+- completed:
+    hackage: digestive-functors-0.8.4.2@sha256:badff1797b6dcd860a48ed4558985b2f6bec501e1016fa5afd9d7d6b0d8e4c08,3364
+    pantry-tree:
+      size: 1682
+      sha256: 53ce82c7f0c60c10009b1b764b537117a4ab402bbe1a147fba5ad2263acb3025
+  original:
+    hackage: digestive-functors-0.8.4.2@sha256:badff1797b6dcd860a48ed4558985b2f6bec501e1016fa5afd9d7d6b0d8e4c08,3364
+- completed:
+    hackage: Spock-digestive-0.3.0.0@sha256:b06b757c37a176d849f5eba5698d58c320660887e57f25399d050d864e152b4d,1271
+    pantry-tree:
+      size: 274
+      sha256: e88cc585c7577bd02547a3ff296db950138b1bac7609a395d0241424759778d5
+  original:
+    hackage: Spock-digestive-0.3.0.0@sha256:b06b757c37a176d849f5eba5698d58c320660887e57f25399d050d864e152b4d,1271
+- completed:
+    hackage: digestive-functors-blaze-0.6.2.0@sha256:3aae259265b8517fb7efe2a7681d846e01f52c22f49f193aff550a1630f182d0,841
+    pantry-tree:
+      size: 289
+      sha256: 2584d35cf054e3daa2f961d7b68e1c0bafd68f99284c4e76509fc455a0380315
+  original:
+    hackage: digestive-functors-blaze-0.6.2.0@sha256:3aae259265b8517fb7efe2a7681d846e01f52c22f49f193aff550a1630f182d0,841
 snapshots:
 - completed:
     size: 524996
