@@ -38,6 +38,73 @@ main = do
 
 app :: SpockM Db.SqlBackend () () ()
 app = do
+  get "clients" $ do
+    (clients :: [Db.Entity Client]) <-
+      runQuery $ \conn -> flip Db.runSqlPersistM conn $ Db.selectList [] []
+    html $
+      toStrict $
+      renderHtml
+        [shamlet|
+                <html>
+                    <body>
+                        <h1>Clients
+                        <table>
+                            <tr>
+                                <th>Name
+                                <th>Address
+                            $forall Db.Entity _ c <- clients
+                                <tr>
+                                    <td>#{clientFirstName c} #{clientLastName c}
+                                    <td>#{clientAddress c}
+            |]
+  get ("client" <//> var) $ \(clientId :: Integer) -> do
+    client <-
+      runQuery $ \conn ->
+        flip Db.runSqlPersistM conn $
+        Db.get $ ClientKey (Db.SqlBackendKey $ fromIntegral clientId)
+    case client of
+      Just (Client {..}) ->
+        html $
+        toStrict $
+        renderHtml
+          [shamlet|
+        <html>
+            <head>
+                <title>Client Info
+                <body>
+                    <h1>#{clientFirstName} #{clientLastName}
+                    <p id=addr>#{clientAddress}
+        |]
+      Nothing -> do
+        setStatus notFound404
+        html "<h1>Client Not Found :(</h1>"
+  get ("json" <//> "client" <//> var) $ \(clientId :: Integer) -> do
+    client <-
+      runQuery $ \conn ->
+        flip Db.runSqlPersistM conn $
+        Db.get $ ClientKey (Db.SqlBackendKey $ fromIntegral clientId)
+    case client of
+      Just c -> json c
+      Nothing -> setStatus notFound404
+  get "products" $ do
+    (products :: [Db.Entity Product]) <-
+      runQuery $ \conn -> flip Db.runSqlPersistM conn $ Db.selectList [] []
+    html $
+      toStrict $
+      renderHtml
+        [shamlet|
+                <html>
+                    <body>
+                        <h1>Products
+                        <table>
+                            <tr>
+                                <th>Name
+                                <th>Description
+                            $forall Db.Entity _ p <- products
+                                <tr>
+                                    <td>#{productName p}
+                                    <td>#{productDescription p}
+            |]
   get ("product" <//> var) $ \(productId :: Integer) -> do
     product <-
       runQuery $ \conn ->
@@ -46,16 +113,24 @@ app = do
     case product of
       Just (Product {..}) ->
         html $
-        mconcat
-          [ "<html><body>"
-          , "<h1>"
-          , T.pack productName
-          , "</h1>"
-          , "<p>"
-          , T.pack productDescription
-          , "</p>"
-          , "</body></html>"
-          ]
+        toStrict $
+        renderHtml
+          [shamlet|
+        <html>
+            <head>
+                <title>Time Machine Store
+                <body>
+                    <h1>#{productName}
+                    <p id=descr>#{productDescription}
+        |]
       Nothing -> do
         setStatus notFound404
         html "<h1>Not Found :(</h1>"
+  get ("json" <//> "product" <//> var) $ \(productId :: Integer) -> do
+    product <-
+      runQuery $ \conn ->
+        flip Db.runSqlPersistM conn $
+        Db.get $ ProductKey (Db.SqlBackendKey $ fromIntegral productId)
+    case product of
+      Just p -> json p
+      Nothing -> setStatus notFound404
