@@ -134,3 +134,58 @@ app = do
     case product of
       Just p -> json p
       Nothing -> setStatus notFound404
+  get "new-product" $ do
+    view <- getForm "product" productForm
+    let view' = fmap H.toHtml view
+    html $
+      toStrict $
+      renderHtml $
+      H.html $ do
+        H.head $ H.title "Time Machine Store"
+        H.body $ productView view'
+  post "new-product" $ do
+    (view, product) <- runForm "product" productForm
+    case product of
+      Just p -> do
+        ProductKey (Db.SqlBackendKey newId) <-
+          runQuery $ \conn -> flip Db.runSqlPersistM conn $ Db.insert p
+        redirect $ mconcat ["/product/", T.pack $ show newId]
+      Nothing -> do
+        let view' = fmap H.toHtml view
+        html $
+          toStrict $
+          renderHtml $
+          H.html $ do
+            H.head $ H.title "Time Machine Store"
+            H.body $ productView view'
+
+countryForm :: Monad m => Form String m Country
+countryForm =
+  Country <$> "name" .: string Nothing <*> "send" .: bool (Just True)
+
+productForm :: Monad m => Form String m Product
+productForm =
+  Product <$> "name" .: string Nothing <*> "description" .: string Nothing <*>
+  "price" .: validate isANumber (string Nothing) <*>
+  "inStock" .: check "Must be >= 0" (>= 0) (validate isANumber (string Nothing))
+
+isANumber :: (Num a, Read a) => String -> Result String a
+isANumber = maybe (Error "Not a number") Success . readMaybe
+        {- HLINT ignore productView -}
+
+productView :: View H.Html -> H.Html
+productView view = do
+  form view "/new-product" $ do
+    label "name" view "Name:"
+    inputText "name" view
+    H.br
+    inputTextArea Nothing Nothing "description" view
+    H.br
+    label "price" view "Price:"
+    inputText "price" view
+    errorList "price" view
+    label "inStock" view "# in Stock:"
+    inputText "inStock" view
+    errorList "inStock" view
+    H.br
+    inputSubmit "Submit"
