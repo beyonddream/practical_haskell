@@ -158,6 +158,62 @@ app = do
           H.html $ do
             H.head $ H.title "Time Machine Store"
             H.body $ productView view'
+  get "register" $ do
+    view <- getForm "client" clientForm
+    let view' = fmap H.toHtml view
+    html $
+      toStrict $
+      renderHtml $
+      H.html $ do
+        H.head $ H.title "Register Client"
+        H.body $ clientView view'
+  post "register" $ do
+    (view, client) <- runForm "client" clientForm
+    case client of
+      Just (Client' f l a c) -> do
+        newCountryKey <-
+          runQuery $ \conn ->
+            flip Db.runSqlPersistM conn $ Db.insert (Country c True)
+        ClientKey (Db.SqlBackendKey newId) <-
+          runQuery $ \conn ->
+            flip Db.runSqlPersistM conn $
+            Db.insert (Client f l a newCountryKey 0)
+        redirect $ mconcat ["/client/", T.pack $ show newId]
+      Nothing -> do
+        let view' = fmap H.toHtml view
+        html $
+          toStrict $
+          renderHtml $
+          H.html $ do
+            H.head $ H.title "Register Client"
+            H.body $ clientView view'
+
+data Client' =
+  Client' String String String String
+
+clientForm :: Monad m => Form String m Client'
+clientForm =
+  Client' <$> "firstName" .: string Nothing <*> "lastName" .: string Nothing <*>
+  "address" .: string Nothing <*>
+  "country" .: choice countries Nothing
+  where
+    countries = [(x, show x) | x <- ["USA", "AUS", "JPN"]]
+
+clientView :: View H.Html -> H.Html
+clientView view = do
+  form view "/register" $ do
+    label "firstName" view "First Name:"
+    inputText "firstName" view
+    H.br
+    label "lastName" view "Last Name:"
+    inputText "lastName" view
+    H.br
+    inputTextArea Nothing Nothing "address" view
+    H.br
+    label "country" view "Country:"
+    inputSelect "country" view
+    H.br
+    inputSubmit "Submit"
 
 countryForm :: Monad m => Form String m Country
 countryForm =
