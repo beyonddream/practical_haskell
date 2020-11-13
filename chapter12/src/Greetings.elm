@@ -4,26 +4,57 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
+import Json.Decode exposing (Decoder, map2, field, string)
+import Http
 
-main = Browser.sandbox { init = init, update = update, view = view }
+main = Browser.element { init = init, update = update, subscriptions = \_ -> Sub.none, view = view }
 
-type alias Model = { currentName : String, textboxName: String }
+type alias Model = { productId : String, productStatus : ProductStatus }
+type ProductStatus = JustStarted
+                    | LoadingProduct
+                    | Error
+                    | ProductData Product
 
-init : Model
-init = { currentName = "Alejandro", textboxName = "Alejandro" }
+type alias Product = { name : String, description : String }
 
-type Msg = TextboxChanged String | MakeCurrent
 
-update : Msg -> Model -> Model
+productDecoder : Decoder Product
+productDecoder = map2  Product (field "name" string)
+                               (field "description" string)
+
+init : () -> (Model, Cmd Msg)
+init _ = ( { productId = "", productStatus = JustStarted }, Cmd.none )
+
+type Msg = TextboxChanged String | Load | ReceivedInfo (Result Http.Error Product)
+
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
-        TextboxChanged nm -> { model | textboxName = nm }
-        MakeCurrent       -> { model | currentName = model.textboxName }
+        TextboxChanged pid -> ({ model | productId = pid }, Cmd.none)
+        Load -> ( {model | productStatus = LoadingProduct}
+                , Http.get
+                    { url = "http://localhost:3000/product/" ++ model.productId
+                    , expect = Http.expectJson ReceivedInfo productDecoder
+                    } )
+        ReceivedInfo result -> case result of
+                Ok p -> ({model | productStatus = ProductData p }, Cmd.none)
+                Err _ -> ({ model | productStatus = Error }, Cmd.none)
 
 view : Model -> Html Msg
 view model = div []
-                [ div [] [ text "Hello, ", text model.currentName, text "!"]
-                , input  [ placeholder "Write your name here"
-                        , value model.textboxName
+                [ viewProduct model
+                , input  [ placeholder "Product Id: "
+                        , value model.productId
                         , onInput TextboxChanged ] []
-                , button [ onClick MakeCurrent ] [ text "Greet me!" ]
+                , button [ onClick Load ] [ text "Search" ]
                 ]
+
+viewProduct : Model -> Html Msg
+viewProduct model =
+        case model of
+                {  productId, productStatus } ->
+                        case productStatus of
+                                ProductData p -> div [] [  label [] [ text ("Product Name = " ++ p.name) ]
+                                                         , label [] [ text ("Product description = " ++ p.description) ]
+                                                         ]
+                                _ -> text ""
+
