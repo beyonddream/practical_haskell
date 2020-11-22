@@ -1,4 +1,6 @@
 {-# LANGUAGE EmptyDataDecls, GADTs, ScopedTypeVariables, AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies, NamedFieldPuns #-}
 
 module Chapter13.DSL where
 
@@ -64,3 +66,59 @@ data Snack t where
         Cracker :: Snack NoPork
         Popcorn :: Snack Vegetarian
         RoastedZucchini :: Snack LowSalt
+
+data Number = Zero | Succ Number deriving Show
+
+one :: Number
+one = Succ Zero
+
+two :: Number
+two = Succ one
+
+min' :: Number -> Number -> Number
+min' Zero _ = Zero
+min' _ Zero = Zero
+min' (Succ x) (Succ y) = Succ (min' x y)
+
+class Product p b op | p -> op, op -> b, b -> p where
+        price :: p -> Float
+        perform :: p -> op -> String
+        testOperation :: p -> op
+
+{- HLINT ignore -}
+data TimeMachine = TimeMachine { model :: String } deriving Show
+
+data TimeMachineOps = Travel Integer | Park deriving Show
+
+instance Product TimeMachine BigBag TimeMachineOps where
+        price _ = 1000.0
+        perform (TimeMachine m) (Travel y)
+          = "Travelling to " ++ show y ++ " with " ++ m
+        perform (TimeMachine m) Park
+          = "Parking time machine " ++ m
+        testOperation _ = Travel 0
+
+totalAmount :: Product p op b => [p] -> Float
+totalAmount = foldr (+) 0.0 . map price
+
+performTest :: Product p op b => p -> String
+performTest p = perform p $ testOperation p
+
+data BigBag
+data SmallBag
+
+data Book = Book { title :: String, author :: String, rating :: Integer }
+        deriving Show
+
+data BookOps = Read | Highlight | WriteCritique deriving Show
+
+instance Product Book SmallBag BookOps where
+        price _ = 500.0
+        perform (Book { title, author, rating }) Read =
+                "Reading book " ++ title ++ " written by author " ++  author ++
+                        ". It has rating of " ++ show rating
+        perform (Book { title, author, rating }) WriteCritique =
+                "The book " ++ title ++ " is a keeper!"
+        perform (Book { title, author, rating }) Highlight =
+                "Go to page 42 in the book " ++ title
+        testOperation _ = Read
