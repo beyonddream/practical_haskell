@@ -1,73 +1,44 @@
+{-# LANGUAGE GADTs #-}
+
 module Chapter13.DSL where
 
-data Offer a
-  = Present a
-  | PercentDiscount Float
-  | AbsoluteDiscount Float
-  | Restrict [a] (Offer a)
-             -- product restriction (1)
-  | From Integer (Offer a)
-             -- time restriction (2)
-  | Until Integer (Offer a)
-  | Extend Integer (Offer a)
-  | Both (Offer a) (Offer a)
-             -- offer combinators (3)
-  | BetterOf (Offer a) (Offer a)
-  | If (Expr a) (Offer a) (Offer a)
-  deriving (Show)
+import Data.List
 
-data Expr a
-  = AmountOf a
-  | PriceOf a
-        -- information about the cart
-  | TotalNumberProducts
-  | TotalPrice
-        -- lifting numerical values
-  | IVal Integer
-  | FVal Float
-        -- arithmetic
-  | (Expr a) :+: (Expr a)
-  | (Expr a) :*: (Expr a)
-        -- comparison
-  | (Expr a) :<: (Expr a)
-  | (Expr a) :<=: (Expr a)
-  | (Expr a) :>: (Expr a)
-  | (Expr a) :>=: (Expr a)
-        -- boolean operations
-  | (Expr a) :&&: (Expr a)
-  | (Expr a) :||: (Expr a)
-  | Not (Expr a)
-  deriving (Show)
+data Expr a r where
+  AmountOf :: a -> Expr a Integer
+  PriceOf :: a -> Expr a Float
+  TotalNumberProducts :: Expr a Integer
+  TotalPrice :: Expr a Float
+  IVal :: Integer -> Expr a Integer
+  FVal :: Float -> Expr a Float
+  (:+:) :: Num n => Expr a n -> Expr a n -> Expr a n
+  (:*:) :: Num n => Expr a n -> Expr a n -> Expr a n
+  (:<:) :: (Num n, Ord n) => Expr a n -> Expr a n -> Expr a Bool
+  (:<=:) :: (Num n, Ord n) => Expr a n -> Expr a n -> Expr a Bool
+  (:>:) :: (Num n, Ord n) => Expr a n -> Expr a n -> Expr a Bool
+  (:>=:) :: (Num n, Ord n) => Expr a n -> Expr a n -> Expr a Bool
+  (:&&:) :: Expr a Bool -> Expr a Bool -> Expr a Bool
+  (:||:) :: Expr a Bool -> Expr a Bool -> Expr a Bool
+  Not :: Expr a Bool -> Expr a Bool
 
-noOffer :: Offer a
-noOffer = AbsoluteDiscount 0
+interpretExpr :: Eq a => Expr a t -> [(a, Float)] -> t
+interpretExpr (e1 :+: e2) list
+  = interpretExpr e1 list + interpretExpr e2 list
+interpretExpr (e1 :*: e2) list
+  = interpretExpr e1 list * interpretExpr e2 list
+interpretExpr (e1 :||: e2) list
+  = interpretExpr e1 list || interpretExpr e2 list
+interpretExpr (e1 :&&: e2) list
+  = interpretExpr e1 list && interpretExpr e2 list
+interpretExpr (Not e) list
+  = not $ interpretExpr e list
+interpretExpr (IVal x) _ = x
+interpretExpr (FVal x) _ = x
+interpretExpr TotalNumberProducts list = toInteger (length $ nub $ [ x | (x,y) <- list])
+interpretExpr TotalPrice list = sum $ [y | (x, y) <- list]
+interpretExpr (PriceOf a) list = head $ [ p | (n, p) <- list , n == a]
+interpretExpr (e1 :<: e2) list = interpretExpr e1 list < interpretExpr e2 list
+interpretExpr (e1 :<=: e2) list = interpretExpr e1 list <= interpretExpr e2 list
+interpretExpr (e1 :>: e2) list = interpretExpr e1 list > interpretExpr e2 list
+interpretExpr (e1 :>=: e2) list = interpretExpr e1 list >= interpretExpr e2 list
 
-v :: Offer String
-v =
-  Until 30 $
-  BetterOf
-    (AbsoluteDiscount 10.0)
-    (Both
-       (Present "balloon")
-       (If (TotalPrice :>: IVal 100) (PercentDiscount 5.0) noOffer))
-
--- 13-1
-period :: Integer -> Integer -> Offer a -> Offer a
-period f d o = Both (From f o) (Until (f + d) o)
-
-allOf :: [Offer a] -> Offer a
-allOf [] = noOffer
-allOf [x] = x
-allOf (x:xs) = Both x (allOf xs)
-        {- HLINT ignore v131 -}
-
-v131 :: Offer String
-v131 =
-  period
-    3
-    5
-    (allOf
-       [ (Present "balloon")
-       , (Present "chocolate muffin")
-       , (PercentDiscount 10.0)
-       ])
