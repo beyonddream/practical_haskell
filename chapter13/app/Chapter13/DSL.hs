@@ -1,8 +1,12 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE EmptyDataDecls, GADTs, ScopedTypeVariables, AllowAmbiguousTypes #-}
 
 module Chapter13.DSL where
 
 import Data.List
+
+data AllowEverything
+data AllowProducts
+data AllowPurchases
 
 data Expr a r where
   AmountOf :: a -> Expr a Integer
@@ -42,3 +46,21 @@ interpretExpr (e1 :<=: e2) list = interpretExpr e1 list <= interpretExpr e2 list
 interpretExpr (e1 :>: e2) list = interpretExpr e1 list > interpretExpr e2 list
 interpretExpr (e1 :>=: e2) list = interpretExpr e1 list >= interpretExpr e2 list
 
+data Person = Person { firstName :: String, lastName :: String }
+
+data User r where
+        Admin :: Person -> User AllowEverything
+        StoreManager :: Person -> User AllowEverything
+        StorePerson :: Person -> User AllowProducts
+        Client :: Person -> User AllowPurchases
+
+data NoPork
+data Vegetarian
+data LowSalt
+data Pork
+
+data Snack t where
+        BaconBites :: Snack Pork
+        Cracker :: Snack NoPork
+        Popcorn :: Snack Vegetarian
+        RoastedZucchini :: Snack LowSalt
