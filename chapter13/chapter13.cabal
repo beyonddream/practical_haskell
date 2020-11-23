@@ -17,7 +17,7 @@ extra-source-files:  CHANGELOG.md
 
 library
   exposed-modules:     MyLib
-  build-depends:       base ^>=4.12.0.0
+  build-depends:       base ^>=4.12.0.0, singletons >= 2.5.1 && < 2.6
   hs-source-dirs:      src
   default-language:    Haskell2010
 
@@ -25,7 +25,7 @@ executable chapter13
   main-is:             Main.hs
   other-modules: Chapter13.DSL, Chapter13.TP
   -- other-extensions:
-  build-depends:       base ^>=4.12.0.0, chapter13
+  build-depends:       base ^>=4.12.0.0, singletons >= 2.5.1 && < 2.6, chapter13
   hs-source-dirs:      app
   default-language:    Haskell2010
 
