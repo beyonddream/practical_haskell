@@ -1,7 +1,7 @@
 {-# LANGUAGE EmptyDataDecls, GADTs, ScopedTypeVariables, AllowAmbiguousTypes #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies, NamedFieldPuns #-}
-{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, FlexibleContexts #-}
 
 module Chapter13.DSL where
 
@@ -147,3 +147,21 @@ class Max x y z | x y -> z
 
 instance Max Zero x x
 instance Max x y z => Max (Succ x) (Succ y) (Succ z)
+
+data Offer a p where
+        Present :: a -> Offer a (Succ Zero)
+        PercentDiscount :: Float -> Offer a Zero
+        AbsoluteDiscount :: Float -> Offer a Zero
+        Both :: Plus p q r => Offer a p -> Offer a q -> Offer a r
+        BetterOf :: Max p q r => Offer a p -> Offer a q -> Offer a r
+        Restrict :: Min (Succ n) p r => Vect (Succ n) a -> Offer a p -> Offer a r
+        From :: Min p Zero r => a -> Offer a r
+        Until :: Max p Zero r => a -> Offer a r
+        Extend :: a -> Offer a p
+        If :: (Max p Zero r, Num n) => Expr a n  -> Offer a p -> Offer a r
+
+class Min x y z | x y -> z
+
+instance Min Zero y Zero
+instance Min (Succ x) Zero Zero
+instance Min x y z => Min (Succ x) (Succ y) (Succ z)
