@@ -146,6 +146,7 @@ data BinaryTree h n where
 class Max x y z | x y -> z
 
 instance Max Zero x x
+instance Max x Zero x
 instance Max x y z => Max (Succ x) (Succ y) (Succ z)
 
 type family Max' x y where
