@@ -1,6 +1,7 @@
 {-# LANGUAGE EmptyDataDecls, GADTs, ScopedTypeVariables, AllowAmbiguousTypes #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies, NamedFieldPuns #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 
 module Chapter13.DSL where
 
@@ -122,3 +123,27 @@ instance Product Book SmallBag BookOps where
         perform (Book { title, author, rating }) Highlight =
                 "Go to page 42 in the book " ++ title
         testOperation _ = Read
+
+data Zero
+data Succ n
+
+data Vect n a where
+        VNil :: Vect Zero a
+        VCons :: a -> Vect n a -> Vect (Succ n) a
+
+headVect :: Vect (Succ n) a -> a
+headVect (VCons x _) = x
+
+class Plus x y z | x y -> z
+
+instance Plus Zero x x
+instance Plus x y z => Plus (Succ x) y (Succ z)
+
+data BinaryTree h n where
+        Leaf :: n -> BinaryTree Zero n
+        Node :: Max x y z => n -> BinaryTree x n1 -> BinaryTree y n2 -> BinaryTree z n
+
+class Max x y z | x y -> z
+
+instance Max Zero x x
+instance Max x y z => Max (Succ x) (Succ y) (Succ z)
