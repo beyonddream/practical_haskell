@@ -23,7 +23,7 @@ library
 
 executable chapter13
   main-is:             Main.hs
-  other-modules: Chapter13.DSL
+  other-modules: Chapter13.DSL, Chapter13.TP
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0, chapter13
   hs-source-dirs:      app
