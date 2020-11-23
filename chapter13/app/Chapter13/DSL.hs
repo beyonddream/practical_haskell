@@ -1,12 +1,13 @@
 {-# LANGUAGE EmptyDataDecls, GADTs, ScopedTypeVariables, AllowAmbiguousTypes #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies, NamedFieldPuns #-}
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, FlexibleContexts, TypeFamilies #-}
 
 module Chapter13.DSL where
 
 import Data.List
 
+{--
 data AllowEverything
 data AllowProducts
 data AllowPurchases
@@ -86,7 +87,6 @@ class Product p b op | p -> op, op -> b, b -> p where
         perform :: p -> op -> String
         testOperation :: p -> op
 
-{- HLINT ignore -}
 data TimeMachine = TimeMachine { model :: String } deriving Show
 
 data TimeMachineOps = Travel Integer | Park deriving Show
@@ -148,20 +148,87 @@ class Max x y z | x y -> z
 instance Max Zero x x
 instance Max x y z => Max (Succ x) (Succ y) (Succ z)
 
+type family Max' x y where
+        Max' Zero y = Zero
+        Max' x Zero = x
+        Max' (Succ x) (Succ y) = Succ (Max' x y)
+
 data Offer a p where
         Present :: a -> Offer a (Succ Zero)
         PercentDiscount :: Float -> Offer a Zero
         AbsoluteDiscount :: Float -> Offer a Zero
-        Both :: Plus p q r => Offer a p -> Offer a q -> Offer a r
-        BetterOf :: Max p q r => Offer a p -> Offer a q -> Offer a r
-        Restrict :: Min (Succ n) p r => Vect (Succ n) a -> Offer a p -> Offer a r
-        From :: Min p Zero r => a -> Offer a r
-        Until :: Max p Zero r => a -> Offer a r
+        Both :: Offer a p -> Offer a q -> Offer a (Plus' p q)
+        Restrict :: Vect (Succ n) a -> Offer a p -> Offer a (Min' (Succ n) p)
+        BetterOf :: Offer a p -> Offer a q -> Offer a (Max' p q)
+        From ::  a -> Offer a p
+        Until :: a -> Offer a p
         Extend :: a -> Offer a p
-        If :: (Max p Zero r, Num n) => Expr a n  -> Offer a p -> Offer a r
+        If :: Num n => Expr a n -> Offer a p -> Offer a (Max' p Zero)
 
 class Min x y z | x y -> z
 
 instance Min Zero y Zero
 instance Min (Succ x) Zero Zero
 instance Min x y z => Min (Succ x) (Succ y) (Succ z)
+
+type family Plus' x y where
+        Plus' Zero x = x
+        Plus' (Succ x) y = Succ (Plus' x y)
+
+append :: Vect x a -> Vect y a -> Vect (Plus' x y) a
+append VNil ys = ys
+append (VCons x xs) ys = VCons x (append xs ys)
+
+type family Min' x y where
+        Min' Zero y = Zero
+        Min' x Zero = Zero
+        Min' (Succ x) (Succ y) = Succ (Min' x y)
+--}
+
+        {- HLINT ignore -}
+--type family Operation x
+
+--type instance Operation TimeMachine = TimeMachineOps
+
+data TimeMachine = TimeMachine { model :: String } deriving Show
+
+data TimeMachineOps = Travel Integer | Park deriving Show
+
+data BigBag
+data SmallBag
+
+data Book = Book { title :: String, author :: String, rating :: Integer }
+        deriving Show
+
+data BookOps = Read | Highlight | WriteCritique deriving Show
+
+class Product p b where
+    type Operation p :: *
+    type Bag p :: *
+    price :: p -> Float
+    perform :: p -> Operation p -> String
+    testOperation :: p -> Operation p
+
+
+instance Product TimeMachine BigBag where
+        type Operation TimeMachine = TimeMachineOps
+        type Bag TimeMachine = BigBag
+        price _ = 1000.0
+        perform (TimeMachine m) (Travel y)
+          = "Travelling to " ++ show y ++ " with " ++ m
+        perform (TimeMachine m) Park
+          = "Parking time machine " ++ m
+        testOperation _ = Travel 0
+
+instance Product Book SmallBag where
+        type Operation Book = BookOps
+        type Bag Book = SmallBag
+        price _ = 500.0
+        perform (Book { title, author, rating }) Read =
+                "Reading book " ++ title ++ " written by author " ++  author ++
+                        ". It has rating of " ++ show rating
+        perform (Book { title, author, rating }) WriteCritique =
+                "The book " ++ title ++ " is a keeper!"
+        perform (Book { title, author, rating }) Highlight =
+                "Go to page 42 in the book " ++ title
+        testOperation _ = Read
