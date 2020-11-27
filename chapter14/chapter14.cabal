@@ -19,15 +19,16 @@ library
   exposed-modules:     MyLib
   -- other-modules:
   -- other-extensions:
-  build-depends:       base ^>=4.12.0.0
+  build-depends:       base ^>=4.12.0.0, uuagc >= 0.9.53.1 && < 0.10, uuagc-cabal >= 1.2.0.0 && < 1.3
   hs-source-dirs:      src
   default-language:    Haskell2010
 
 executable chapter14
   main-is:             Main.hs
-  -- other-modules:
+  other-modules: Chapter14.AG, Chapter14.ExSimple
   -- other-extensions:
-  build-depends:       base ^>=4.12.0.0, chapter14
+  build-depends:       base ^>=4.12.0.0, uuagc >= 0.9.53.1 && < 0.10, uuagc-cabal >= 1.2.0.0 && < 1.3,
+                       chapter14
   hs-source-dirs:      app
   default-language:    Haskell2010
 
