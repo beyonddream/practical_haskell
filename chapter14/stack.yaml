@@ -39,7 +39,9 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps: ["uuagc-0.9.53@sha256:dfcc03abe70788205a654a9609a533b8b8cea8f07dc63b488b0342f08d1a8249,3394",
+"uuagc-cabal-1.2.0.0@sha256:4defb1455dedcc3b0222c6f069c51e08fa70b1bd9ec044c0b7accedb49c2c367,1104",
+"uulib-0.9.24@sha256:152da205e22befdeeb65e734990142d578456efb6e14e46bfd22e4cb63cd374d,1801"]
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -3,7 +3,28 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: uuagc-0.9.53@sha256:dfcc03abe70788205a654a9609a533b8b8cea8f07dc63b488b0342f08d1a8249,3394
+    pantry-tree:
+      size: 4792
+      sha256: 6e9d08f5852f8ae62ff36f241b46378a620b346f6b35dff08439720ec81f9e06
+  original:
+    hackage: uuagc-0.9.53@sha256:dfcc03abe70788205a654a9609a533b8b8cea8f07dc63b488b0342f08d1a8249,3394
+- completed:
+    hackage: uuagc-cabal-1.2.0.0@sha256:4defb1455dedcc3b0222c6f069c51e08fa70b1bd9ec044c0b7accedb49c2c367,1104
+    pantry-tree:
+      size: 576
+      sha256: 44f4802199e40cb060220d6659c66fd3c9a92ef58aca374fa33ead877abfedc9
+  original:
+    hackage: uuagc-cabal-1.2.0.0@sha256:4defb1455dedcc3b0222c6f069c51e08fa70b1bd9ec044c0b7accedb49c2c367,1104
+- completed:
+    hackage: uulib-0.9.24@sha256:152da205e22befdeeb65e734990142d578456efb6e14e46bfd22e4cb63cd374d,1801
+    pantry-tree:
+      size: 2343
+      sha256: 65e2c597dd20e0a985f42a5cbc526a39122aebb347b7c399e414f560b18579be
+  original:
+    hackage: uulib-0.9.24@sha256:152da205e22befdeeb65e734990142d578456efb6e14e46bfd22e4cb63cd374d,1801
 snapshots:
 - completed:
     size: 532832

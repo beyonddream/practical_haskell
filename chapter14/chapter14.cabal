@@ -20,7 +20,7 @@ custom-setup
 
 executable chapter14
   main-is:             Main.hs
-  other-modules: Chapter14.Simple
+  other-modules: Chapter14.Simple, Chapter14.ExSimple
   -- other-extensions:
   build-depends:       base >=4
   hs-source-dirs:      app
