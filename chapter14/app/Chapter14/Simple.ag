@@ -12,14 +12,29 @@ data Expr a
     | And right :: (Expr {a}) left :: (Expr {a})
     | Not inner :: (Expr {a})
 
-attr Expr
+data Root a
+    | Root expr :: (Expr {a})
+
+deriving Root Expr : Show
+
+attr Root Expr
     inh products :: {[(a, Float)]}
     syn intValue :: {Maybe Int}
     syn fltValue :: {Maybe Float}
     syn boolValue :: {Maybe Bool}
 
+attr Expr
+    inh numberOfProducts :: Int
+    inh totalPrice :: Float
+
+
+imports
+{
+import Control.Applicative
+}
+
 sem Eq {a} => Expr
-    | TotalNumberOfProducts lhs.intValue = Just $ length @lhs.products
+    | TotalNumberOfProducts lhs.intValue = Just $ @lhs.numberOfProducts
                             lhs.fltValue = Nothing
                             lhs.boolValue = Nothing
     | Plus lhs.intValue = { (+) <$> @right.intValue <*> @left.intValue }
@@ -33,7 +48,7 @@ sem Eq {a} => Expr
     | PriceOf lhs.fltValue = { Just $ head $ [ p | (n, p) <- @lhs.products , n == @product] }
               lhs.intValue = Nothing
               lhs.boolValue = Nothing
-    | TotalPrice lhs.fltValue = { Just $ sum $ [p | (n, p) <- @lhs.products] }
+    | TotalPrice lhs.fltValue = Just $ @lhs.totalPrice
                  lhs.intValue = Nothing
                  lhs.boolValue = Nothing
     | IVal lhs.intValue = Just @val
@@ -49,8 +64,8 @@ sem Eq {a} => Expr
             left.products = @lhs.products
     | LessThan lhs.intValue = Nothing
                lhs.fltValue = Nothing
-               lhs.boolValue = { (||) <$> ((<) <$> @right.fltValue <*> @left.fltValue) <*>
-                                 ((<) <$> @right.intValue <*> @left.intValue)
+               lhs.boolValue = { (<) <$> @right.fltValue <*> @left.fltValue <|>
+                                 (<) <$> @right.intValue <*> @left.intValue
                                 }
                right.products = @lhs.products
                left.products = @lhs.products
@@ -68,6 +83,11 @@ sem Eq {a} => Expr
           lhs.fltValue = Nothing
           lhs.boolValue = { (not) <$> @inner.boolValue }
           inner.products = @lhs.products
+
+sem Eq {a} => Root
+    | Root expr.numberOfProducts = length @lhs.products
+           expr.totalPrice       = foldr (\(_,p) x -> p + x) 0.0 @lhs.products
+
 
 
 

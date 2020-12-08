@@ -1,3 +1,7 @@
 file : "app/Chapter14/Simple.ag"
 options : data, semfuns, catas, pretty, wrappers, rename,
           module "Chapter14.Simple", haskellsyntax, signatures
+
+file : "app/Chapter14/Offer.ag"
+options : data, semfuns, catas, pretty, wrappers, rename,
+          module "Chapter14.Offer", haskellsyntax, signatures

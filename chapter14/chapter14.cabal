@@ -20,7 +20,7 @@ custom-setup
 
 executable chapter14
   main-is:             Main.hs
-  other-modules: Chapter14.Simple, Chapter14.ExSimple
+  other-modules: Chapter14.Simple, Chapter14.ExSimple, Chapter14.Offer, Chapter14.ExOffer
   extensions: ScopedTypeVariables
   other-extensions: ScopedTypeVariables
   build-depends:       base >=4
