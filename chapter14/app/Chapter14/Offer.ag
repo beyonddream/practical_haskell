@@ -20,8 +20,10 @@ deriving Offer : Show
 
 attr Offer
     syn presents use {++} {[]} :: {[a]}
+    syn maxDuration use {min} {0} :: Int
 
 sem Eq {a} => Offer
     | Present lhs.presents = [@present]
     | Restrict lhs.presents = { @products `intersect` @inner.presents }
-
+    | From lhs.maxDuration = { min @from @inner.maxDuration }
+    | Until lhs.maxDuration = { abs $ min (negate @until) @inner.maxDuration }
