@@ -2,6 +2,9 @@ imports
 {
 import Chapter14.Simple
 import Data.List
+import Data.String
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as A
 }
 
 data Offer a
@@ -16,14 +19,33 @@ data Offer a
     | BetterOf left :: (Offer {a}) right :: (Offer {a})
     | If cond :: (Root {a}) then :: (Offer {a}) else :: (Offer {a})
 
+data HtmlRoot a
+    | HtmlRoot root :: (Offer {a})
+
 deriving Offer : Show
 
+deriving HtmlRoot Offer : Show
+
+attr HtmlRoot Offer
+    syn html :: {H.Html}
+
 attr Offer
+    chn counter :: Int
+    syn title :: String
+    syn subtitles :: {[(String, Int)]}
     syn presents use {++} {[]} :: {[a]}
     syn maxDuration use {min} {0} :: Int
 
-sem Eq {a} => Offer
-    | Present lhs.presents = [@present]
-    | Restrict lhs.presents = { @products `intersect` @inner.presents }
-    | From lhs.maxDuration = { min @from @inner.maxDuration }
-    | Until lhs.maxDuration = { abs $ min (negate @until) @inner.maxDuration }
+imports
+{
+import Control.Applicative
+}
+
+sem Eq {a}, Show {a} => Offer
+    | Present PercentDiscount AbsoluteDiscount
+        lhs.counter = @lhs.counter + 1
+
+sem Eq {a}, Show {a} => HtmlRoot
+    | HtmlRoot root.title = H.toHtml $ @lhs.title
+
+
