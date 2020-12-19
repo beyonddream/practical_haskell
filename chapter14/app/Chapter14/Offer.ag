@@ -53,6 +53,83 @@ sem Eq {a}, Show {a} => Offer
     | Restrict From Until Extend
         loc.ident = @lhs.counter + 1
         inner.counter = @loc.ident
+    | If
+        loc.ident = @lhs.counter + 1
+        then.counter = @loc.ident
+        else.counter = @loc.ident
+    | Present PercentDiscount AbsoluteDiscount Restrict
+      From Until Extend Both BetterOf If
+        lhs.html = {
+                do H.a H.! A.name (fromString ("elt" ++ show @loc.ident))
+                        $ H.toHtml @loc.htmlText
+                   @loc.htmlChild }
+    | PercentDiscount
+        loc.htmlText = show @discount ++ "% discount"
+        loc.htmlChild = H.toHtml ""
+    | BetterOf
+        loc.htmlText = "Better of"
+        loc.htmlChild =  { H.ul $ do H.li @left.html
+                                     H.li @right.html }
+    | Present
+        loc.htmlText = "Present : " ++ (show @present)
+        loc.htmlChild = H.toHtml ""
+    | AbsoluteDiscount
+        loc.htmlText = show @discount ++ " abs discount"
+        loc.htmlChild = H.toHtml ""
+    | Restrict
+        loc.htmlText = "Restrict"
+        loc.htmlChild = H.toHtml @inner.html
+    | From
+        loc.htmlText = "From"
+        loc.htmlChild = H.toHtml @inner.html
+    | Until
+        loc.htmlText = "Until"
+        loc.htmlChild = H.toHtml @inner.html
+    | Extend
+        loc.htmlText = "Extend"
+        loc.htmlChild = H.toHtml @inner.html
+    | Both
+       loc.htmlText = "Both"
+       loc.htmlChild = { H.ul $ do H.li @left.html
+                                   H.li @right.html }
+    | If
+      loc.htmlText = "If"
+      loc.htmlChild = { H.ul $ do H.li @then.html
+                                  H.li @else.html }
+    | PercentDiscount
+        lhs.title = { "DISCOUNT: " ++ show @discount ++ "%" }
+        lhs.subtitles = []
+    | BetterOf
+        lhs.title = { "BETTER OF" }
+        lhs.subtitles = [ (@left.title, @left.counter)
+                        , (@right.title, @right.counter) ]
+    | Present
+        lhs.title = { "PRESENT: " ++ (show @present) }
+        lhs.subtitles = []
+    | AbsoluteDiscount
+        lhs.title = { "ABSOLUTE DISCOUNT: " ++ show @discount }
+        lhs.subtitles = []
+    | Restrict
+        lhs.title = {"RESTRICT"}
+        lhs.subtitles = [ (@inner.title, @inner.counter) ]
+    | From
+        lhs.title = {"FROM"}
+        lhs.subtitles = [ (@inner.title, @inner.counter) ]
+    | Until
+        lhs.title = {"UNTIL"}
+        lhs.subtitles = [ (@inner.title, @inner.counter) ]
+    | Extend
+        lhs.title = {"EXTEND"}
+        lhs.subtitles = [ (@inner.title, @inner.counter) ]
+    | Both
+        lhs.title = {"BOTH"}
+        lhs.subtitles = [ (@left.title, @left.counter)
+                        , (@right.title, @right.counter) ]
+    | If
+        lhs.title = {"IF"}
+        lhs.subtitles = [ (@then.title, @then.counter)
+                        , (@else.title, @else.counter) ]
+
 
 sem Eq {a}, Show {a} => HtmlRoot
     | HtmlRoot root.counter = 1
