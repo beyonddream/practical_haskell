@@ -26,15 +26,15 @@ deriving Offer : Show
 
 deriving HtmlRoot Offer : Show
 
-attr HtmlRoot Offer
-    syn html :: {H.Html}
-
 attr Offer
     chn counter :: Int
     syn title :: String
     syn subtitles :: {[(String, Int)]}
     syn presents use {++} {[]} :: {[a]}
     syn maxDuration use {min} {0} :: Int
+
+attr HtmlRoot Offer
+    syn html :: {H.Html}
 
 imports
 {
@@ -43,9 +43,29 @@ import Control.Applicative
 
 sem Eq {a}, Show {a} => Offer
     | Present PercentDiscount AbsoluteDiscount
-        lhs.counter = @lhs.counter + 1
+        loc.ident = @lhs.counter + 1
+        lhs.counter = @loc.ident
+    | Both BetterOf
+        left.counter = @lhs.counter
+        right.counter = @left.counter
+        loc.ident = @right.counter + 1
+        lhs.counter = @loc.ident
+    | Restrict From Until Extend
+        loc.ident = @lhs.counter + 1
+        inner.counter = @loc.ident
 
 sem Eq {a}, Show {a} => HtmlRoot
-    | HtmlRoot root.title = H.toHtml $ @lhs.title
-
+    | HtmlRoot root.counter = 1
+               lhs.html = {
+                       do H.h1 $ H.toHtml "Description of an offer"
+                          H.h2 $ H.toHtml "Possible presents:"
+                          H.ul $ mapM_ (\e -> H.li $ H.toHtml (show e)) @root.presents
+                          H.h2 $ H.toHtml "Main offer"
+                          H.a H.! A.href (fromString ("#elt" ++ show @root.counter))
+                                $ H.toHtml @root.title
+                          H.ul $ mapM_ (\(s, e) -> H.li $ H.a H.! A.href (fromString ("#elt" ++ show e))
+                                                        $ H.toHtml s)
+                                    @root.subtitles
+                          H.h2 $ H.toHtml "Complete offer"
+                          @root.html }
 
