@@ -20,7 +20,7 @@ custom-setup
 
 executable chapter14
   main-is:             Main.hs
-  other-modules: Chapter14.Simple, Chapter14.ExSimple, Chapter14.Offer, Chapter14.ExOffer
+  other-modules: Chapter14.Simple, Chapter14.ExSimple, Chapter14.Offer, Chapter14.ExOffer, Chapter14.ExprEx
   extensions: ScopedTypeVariables
   other-extensions: ScopedTypeVariables
   build-depends:       base >=4, blaze-html >= 0.9.1.2 && < 0.10
