@@ -75,3 +75,12 @@ replace "(" "\\(" . replace ")" "\\(" . pack should be replace "(" "\\(" . repla
 page 351
 In page 351, there is no corresponding change for saveClients function shown in the Builders example.
 fixed it with `L.sourceList clients .| L.map (L.toStrict . B.toLazyText . clientToText)`
+
+page 513 . st should be s
+```haskell
+...
+                          H.ul $ mapM_ (\(s, e) -> H.li $ H.a H.! A.href (fromString ("#elt" ++ show e))
+                                                        $ H.toHtml st)
+                                    @root.subtitles
+...
+```
