@@ -20,10 +20,10 @@ library
   other-modules: Chapter15.BTEx
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0
-  hs-source-dirs:      src, src/Chapter15
+  hs-source-dirs:      src
   default-language:    Haskell2010
 
-executable chapter15
+executable chapter15Exe
   main-is:             Main.hs
   -- other-modules: Chapter15.BTEx
   -- other-extensions:
@@ -31,9 +31,10 @@ executable chapter15
   hs-source-dirs:      app
   default-language:    Haskell2010
 
-test-suite chapter15-test
+test-suite Tasty
   default-language:    Haskell2010
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             MyLibTest.hs
-  build-depends:       base ^>=4.12.0.0
+  hs-source-dirs:      test src
+  main-is:             Tasty.hs
+  build-depends:       base ^>=4.12.0.0, tasty, tasty-hunit, tasty-quickcheck, tasty-smallcheck,
+                       chapter15
