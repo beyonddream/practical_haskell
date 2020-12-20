@@ -1,4 +1,12 @@
-module Chapter15.BTEx where
+-- | Simple implementation of binary trees
+module Chapter15.BTEx
+    -- * The main data type
+  ( BinaryTree(..)
+    -- * Operations
+    -- ** Insertion
+  , treeInsert
+  , treeMerge
+  ) where
 
 -- | A typical binary tree
 data BinaryTree a
@@ -6,6 +14,18 @@ data BinaryTree a
   | Node a (BinaryTree a) (BinaryTree a) -- ^Inner nodes
   deriving (Show, Eq)
 
+{-|
+Inserts an element into a 'BinaryTree'
+
+ * If it finds a leaf, insert there
+
+ * If smaller than the item in the node, insert in the left
+
+ * If larger than the item in the node, insert in the right
+
+>>> treeInsert 1 Leaf
+Node 1 Leaf Leaf
+-}
 treeInsert :: Ord a => a -> BinaryTree a -> BinaryTree a
 treeInsert x Leaf = Node x Leaf Leaf
 treeInsert x (Node y l r)
