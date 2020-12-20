@@ -84,3 +84,5 @@ page 513 . st should be s
                                     @root.subtitles
 ...
 ```
+
+page 535 `Insert 1 on empty tree: OK` should be `Insert 'a' on empty tree: OK`
