@@ -50,8 +50,6 @@ allTests =
         , QC.testProperty "applying twice return original list" $ \(lst :: [Integer]) ->
             reverse' (reverse' lst) == lst
         , QC.testProperty "head is last ele of reversed list" $ \(lst :: [Integer]) ->
-            if length lst > 0
-              then head (reverse' lst) == last lst
-              else True
+            length lst > 0 ==> head (reverse' lst) == last lst
         ]
     ]
