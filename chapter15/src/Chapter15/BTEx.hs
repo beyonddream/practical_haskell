@@ -47,6 +47,8 @@ treeFind t (Node v l r) =
     GT -> treeFind t r
 treeFind _ Leaf = Nothing
 
+{-@ LIQUID "--no-termination" @-}
+{-@ treeSize :: BinaryTree a -> Nat @-}
 treeSize :: Ord a => BinaryTree a -> Int
 treeSize Leaf = 0
 treeSize (Node _ l r) = 1 + treeSize l + treeSize r
